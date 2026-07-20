@@ -1,6 +1,6 @@
 # Ticks
 
-Ticks is a client-side Minecraft mod that renders the celestial clock at the frame rate instead of the 20 Hz game-tick rate. It targets Minecraft 1.21.1 and is built from the same source for Fabric and NeoForge.
+Ticks is a **client-side-only** Minecraft mod that renders the celestial clock at the frame rate instead of the 20 Hz game-tick rate. Install it on players' clients only: it is neither required nor useful on dedicated servers. It targets Minecraft 1.21.1 and is built from the same source for Fabric and NeoForge.
 
 The mod changes only the time value observed by the sky-rendering path. The authoritative world time, server synchronization, scheduled ticks, game rules, redstone, entities, and all other simulation logic remain untouched.
 
