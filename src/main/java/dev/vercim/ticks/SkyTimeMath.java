@@ -1,4 +1,4 @@
-package dev.skuto.ticks;
+package dev.vercim.ticks;
 
 /** Pure math used to keep the visual sky clock continuous around midnight. */
 public final class SkyTimeMath {

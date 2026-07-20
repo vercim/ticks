@@ -3,7 +3,7 @@ plugins {
 	id("dev.kikugie.loom-back-compat")
 }
 
-group = "dev.skuto.ticks"
+group = "dev.vercim.ticks"
 version = "${project.property("mod_version")}+${project.property("minecraft_version")}-fabric"
 base.archivesName = "ticks"
 

@@ -2,6 +2,7 @@
 build/
 versions/
 run/
+.sc_active_version
 *.class
 .idea/
 *.iml

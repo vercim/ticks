@@ -1,4 +1,4 @@
-package dev.skuto.ticks.neoforge;
+package dev.vercim.ticks.neoforge;
 
 //? neoforge {
 /*import net.neoforged.fml.common.Mod;

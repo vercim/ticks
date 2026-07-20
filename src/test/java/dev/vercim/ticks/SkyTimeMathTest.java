@@ -1,4 +1,4 @@
-package dev.skuto.ticks;
+package dev.vercim.ticks;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;

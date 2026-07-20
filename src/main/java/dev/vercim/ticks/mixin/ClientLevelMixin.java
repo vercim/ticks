@@ -1,6 +1,6 @@
-package dev.skuto.ticks.mixin;
+package dev.vercim.ticks.mixin;
 
-import dev.skuto.ticks.TicksController;
+import dev.vercim.ticks.TicksController;
 import net.minecraft.client.multiplayer.ClientLevel;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;

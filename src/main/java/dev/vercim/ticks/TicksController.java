@@ -1,4 +1,4 @@
-package dev.skuto.ticks;
+package dev.vercim.ticks;
 
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;

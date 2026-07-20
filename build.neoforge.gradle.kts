@@ -3,7 +3,7 @@ plugins {
 	id("net.neoforged.moddev")
 }
 
-group = "dev.skuto.ticks"
+group = "dev.vercim.ticks"
 version = "${project.property("mod_version")}+${project.property("minecraft_version")}-neoforge"
 base.archivesName = "ticks"
 

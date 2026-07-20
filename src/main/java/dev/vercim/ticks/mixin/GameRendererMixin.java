@@ -1,6 +1,6 @@
-package dev.skuto.ticks.mixin;
+package dev.vercim.ticks.mixin;
 
-import dev.skuto.ticks.TicksController;
+import dev.vercim.ticks.TicksController;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.renderer.GameRenderer;
 import org.spongepowered.asm.mixin.Mixin;
