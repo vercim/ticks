@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "smooth_time",
+  "version": "${version}",
+  "name": "Smooth Time",
+  "description": "Smooths the client-side sky time at the render frame rate.",
+  "authors": ["skuto"],
+  "license": "MIT",
+  "icon": "assets/smooth_time/icon.png",
+  "environment": "client",
+  "mixins": [
+    {
+      "config": "smooth_time.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=0.16.10",
+    "minecraft": "1.21.1",
+    "java": ">=21"
+  }
+}

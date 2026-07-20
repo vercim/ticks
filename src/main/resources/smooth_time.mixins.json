@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.skuto.smoothtime.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "client": [
+    "ClientLevelMixin",
+    "DimensionTypeMixin",
+    "GameRendererMixin"
+  ]
+}
