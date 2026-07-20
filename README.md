@@ -72,8 +72,11 @@ Run a specific development client with:
 `runActiveClient` is a convenience task that follows the target named in `.sc_active_version`:
 
 ```powershell
+Set-Content -NoNewline .sc_active_version "1.21.1-fabric"
 .\gradlew.bat runActiveClient
 ```
+
+Use `1.21.1-neoforge` instead to make NeoForge the active target. The `.sc_active_version` file must exist before running any Gradle task because Stonecutter reads it during project configuration.
 
 ## Project layout
 
