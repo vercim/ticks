@@ -1,6 +1,6 @@
-package dev.skuto.smoothtime.mixin;
+package dev.skuto.ticks.mixin;
 
-import dev.skuto.smoothtime.SmoothTimeController;
+import dev.skuto.ticks.TicksController;
 import net.minecraft.world.level.dimension.DimensionType;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -10,8 +10,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(DimensionType.class)
 abstract class DimensionTypeMixin {
 	@Inject(method = "timeOfDay", at = @At("HEAD"), cancellable = true)
-	private void smoothTime$useFractionalTime(long dayTime, CallbackInfoReturnable<Float> callbackInfo) {
-		Float angle = SmoothTimeController.getSkyAngleOverride((DimensionType) (Object) this, dayTime);
+	private void ticks$useFractionalTime(long dayTime, CallbackInfoReturnable<Float> callbackInfo) {
+		Float angle = TicksController.getSkyAngleOverride((DimensionType) (Object) this, dayTime);
 		if (angle != null) {
 			callbackInfo.setReturnValue(angle);
 		}

@@ -3,9 +3,9 @@ plugins {
 	id("net.neoforged.moddev")
 }
 
-group = "dev.skuto.smoothtime"
-version = "0.1.0-alpha.1+1.21.1-neoforge"
-base.archivesName = "smooth-time"
+group = "dev.skuto.ticks"
+version = "${project.property("mod_version")}+${project.property("minecraft_version")}-neoforge"
+base.archivesName = "ticks"
 
 java {
 	toolchain.languageVersion = JavaLanguageVersion.of(21)
@@ -13,7 +13,7 @@ java {
 }
 
 neoForge {
-	version = "21.1.213"
+	version = project.property("neoforge_version") as String
 
 	runs {
 		register("client") {
@@ -24,11 +24,13 @@ neoForge {
 	}
 
 	mods {
-		register("smooth_time") {
+		register("ticks") {
 			sourceSet(sourceSets["main"])
 		}
 	}
 }
+
+sourceSets["main"].resources.srcDir(rootProject.file("src/neoforge/resources"))
 
 repositories {
 	mavenCentral()
@@ -40,9 +42,22 @@ dependencies {
 }
 
 tasks.processResources {
-	inputs.property("version", project.version)
+	val metadata = mapOf(
+		"version" to project.version,
+		"mod_id" to project.property("mod_id"),
+		"mod_name" to project.property("mod_name"),
+		"mod_authors" to project.property("mod_authors"),
+		"mod_license" to project.property("mod_license"),
+		"mod_description" to project.property("mod_description"),
+		"mod_homepage" to project.property("mod_homepage"),
+		"mod_issues" to project.property("mod_issues"),
+		"minecraft_version" to project.property("minecraft_version"),
+		"neoforge_version" to project.property("neoforge_version"),
+		"neoforge_loader_version_range" to project.property("neoforge_loader_version_range")
+	)
+	inputs.properties(metadata)
 	filesMatching("META-INF/neoforge.mods.toml") {
-		expand("version" to project.version)
+		expand(metadata)
 	}
 }
 

@@ -1,6 +1,6 @@
-package dev.skuto.smoothtime.mixin;
+package dev.skuto.ticks.mixin;
 
-import dev.skuto.smoothtime.SmoothTimeController;
+import dev.skuto.ticks.TicksController;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.renderer.GameRenderer;
 import org.spongepowered.asm.mixin.Mixin;
@@ -11,12 +11,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(GameRenderer.class)
 abstract class GameRendererMixin {
 	@Inject(method = "render", at = @At("HEAD"))
-	private void smoothTime$beginFrame(DeltaTracker deltaTracker, boolean tick, CallbackInfo callbackInfo) {
-		SmoothTimeController.beginFrame(deltaTracker);
+	private void ticks$beginFrame(DeltaTracker deltaTracker, boolean tick, CallbackInfo callbackInfo) {
+		TicksController.beginFrame(deltaTracker);
 	}
 
 	@Inject(method = "render", at = @At("RETURN"))
-	private void smoothTime$endFrame(DeltaTracker deltaTracker, boolean tick, CallbackInfo callbackInfo) {
-		SmoothTimeController.endFrame();
+	private void ticks$endFrame(DeltaTracker deltaTracker, boolean tick, CallbackInfo callbackInfo) {
+		TicksController.endFrame();
 	}
 }

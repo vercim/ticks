@@ -1,4 +1,4 @@
-package dev.skuto.smoothtime;
+package dev.skuto.ticks;
 
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -10,7 +10,7 @@ import net.minecraft.world.level.dimension.DimensionType;
  * Owns the client-only visual time. The world continues to hold the authoritative
  * whole-tick time; only calls made while a frame is rendered see this value.
  */
-public final class SmoothTimeController {
+public final class TicksController {
 	private static final double TRANSITION_TIME_CONSTANT_SECONDS = 0.20;
 
 	private static ClientLevel trackedLevel;
@@ -21,7 +21,7 @@ public final class SmoothTimeController {
 	private static double offset;
 	private static long lastFrameNanos;
 
-	private SmoothTimeController() {
+	private TicksController() {
 	}
 
 	public static void beginFrame(DeltaTracker deltaTracker) {

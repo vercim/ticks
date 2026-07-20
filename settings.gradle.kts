@@ -9,9 +9,9 @@ pluginManagement {
 }
 
 plugins {
-	id("dev.kikugie.stonecutter") version "0.9.2"
+	id("dev.kikugie.stonecutter") version "0.9.7"
 	id("dev.kikugie.loom-back-compat") version "0.4.1" apply false
-	id("net.neoforged.moddev") version "2.0.141" apply false
+	id("net.neoforged.moddev") version "2.0.142" apply false
 }
 
 stonecutter {

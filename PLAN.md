@@ -1,4 +1,4 @@
-# Smooth Time 0.1.0 — Fabric 1.21.1
+# Ticks 0.1.0 — Fabric 1.21.1
 
 ## Кратко
 
@@ -8,8 +8,8 @@
 
 ## Структура проекта и метаданные
 
-- Название: `Smooth Time`; имя артефакта/репозитория: `smooth-time`; внутренний mod id: `smooth_time`, поскольку NeoForge не допускает дефис в mod id ([NeoForge identifiers](https://docs.neoforged.net/docs/1.21.11/misc/identifier/)).
-- Java-пакет: `dev.skuto.smoothtime`; версия: `0.1.0-alpha.1`; лицензия: MIT; окружение: client-only.
+- Название, имя артефакта/репозитория и внутренний mod id: `Ticks` / `ticks`.
+- Java-пакет: `dev.skuto.ticks`; версия: `0.1.0-alpha.1`; лицензия: LGPL-3.0-only; окружение: client-only.
 - Удалить демонстрационный код, Forge и лишние версии Minecraft из шаблона. Оставить Java 21 как целевой байткод; установленный JDK 25 использовать для Gradle.
 - Не добавлять Fabric API, Mod Menu, Cloth Config, сетевые пакеты или команды: для первой версии достаточно Fabric Loader и Mixin.
 - Публичного API не будет. Внутренние типы: контроллер визуального времени, чистые математические функции и три клиентских mixin-точки.

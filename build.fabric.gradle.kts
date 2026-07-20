@@ -3,9 +3,9 @@ plugins {
 	id("dev.kikugie.loom-back-compat")
 }
 
-group = "dev.skuto.smoothtime"
-version = "0.1.0-alpha.1+1.21.1-fabric"
-base.archivesName = "smooth-time"
+group = "dev.skuto.ticks"
+version = "${project.property("mod_version")}+${project.property("minecraft_version")}-fabric"
+base.archivesName = "ticks"
 
 java {
 	toolchain.languageVersion = JavaLanguageVersion.of(21)
@@ -16,7 +16,7 @@ repositories {
 	mavenCentral()
 }
 
-sourceSets["main"].resources.srcDir("src/fabric/resources")
+sourceSets["main"].resources.srcDir(rootProject.file("src/fabric/resources"))
 
 loom {
 	runs.named("client") {
@@ -28,20 +28,33 @@ loom {
 }
 
 dependencies {
-	minecraft("com.mojang:minecraft:1.21.1")
+	minecraft("com.mojang:minecraft:${project.property("minecraft_version")}")
 	mappings(loom.layered {
 		officialMojangMappings()
 	})
-	modImplementation("net.fabricmc:fabric-loader:0.16.10")
+	modImplementation("net.fabricmc:fabric-loader:${project.property("fabric_loader_version")}")
 
 	testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 tasks.processResources {
-	inputs.property("version", project.version)
+	val metadata = mapOf(
+		"version" to project.version,
+		"mod_id" to project.property("mod_id"),
+		"mod_name" to project.property("mod_name"),
+		"mod_authors" to project.property("mod_authors"),
+		"mod_license" to project.property("mod_license"),
+		"mod_description" to project.property("mod_description"),
+		"mod_homepage" to project.property("mod_homepage"),
+		"mod_sources" to project.property("mod_sources"),
+		"mod_issues" to project.property("mod_issues"),
+		"minecraft_version" to project.property("minecraft_version"),
+		"fabric_loader_min_version" to project.property("fabric_loader_min_version")
+	)
+	inputs.properties(metadata)
 	filesMatching("fabric.mod.json") {
-		expand("version" to project.version)
+		expand(metadata)
 	}
 }
 
