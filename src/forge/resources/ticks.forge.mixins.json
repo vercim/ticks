@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.vercim.ticks.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "ticks.forge.refmap.json",
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "client": [
+    "ClientLevelMixin",
+    "DimensionTypeMixin",
+    "GameRendererMixin"
+  ]
+}

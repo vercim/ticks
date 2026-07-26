@@ -33,6 +33,11 @@ legacyForge {
 	}
 }
 
+mixin {
+	add(sourceSets["main"], "ticks.forge.refmap.json")
+	config("ticks.forge.mixins.json")
+}
+
 sourceSets["main"].resources.srcDir(rootProject.file("src/forge/resources"))
 
 repositories {
@@ -40,6 +45,7 @@ repositories {
 }
 
 dependencies {
+	annotationProcessor("org.spongepowered:mixin:0.8.5:processor")
 	testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
@@ -66,6 +72,10 @@ tasks.processResources {
 
 tasks.withType<JavaCompile>().configureEach {
 	options.release = javaVersion
+}
+
+tasks.jar {
+	manifest.attributes["MixinConfigs"] = "ticks.forge.mixins.json"
 }
 
 tasks.test {
