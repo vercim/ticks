@@ -1,4 +1,4 @@
-> Ticks is a client-side Minecraft mod that smooths the celestial clock from the 20 Hz game-tick rate to the frame rate. 
+> Client-side Minecraft mod that smooths the celestial clock from the 20 Hz game-tick rate to the frame rate. 
 
 It affects sky rendering only; world time, server synchronization, and game logic are unchanged. Dedicated-server installation is unnecessary.
 
