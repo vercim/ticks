@@ -35,7 +35,7 @@ ticks-0.1.0+1.21.1-fabric.jar
 
 ## Multi-loader and multi-version setup
 
-The project uses [Stonecutter](https://stonecutter.kikugie.dev/) to create four Gradle targets from one source tree: Fabric and Forge for 1.20.1, plus Fabric and NeoForge for 1.21.1. Shared Java sources and Mixin configuration live in `src/main`; loader metadata is stored in loader-specific resource directories.
+The project uses [Stonecutter](https://stonecutter.kikugie.dev/) to create four Gradle targets from one source tree.
 
 Each target selects its build script: Fabric uses Fabric Loom (with Loom Back Compat for 1.20.1), Forge uses NeoForge ModDev LegacyForge, and NeoForge uses NeoForge ModDev. Stonecutter conditional compilation in the shared sources handles API differences between Minecraft versions, such as the `GameRenderer#render` signature.
 
