@@ -1,6 +1,5 @@
 package dev.vercim.ticks;
 
-import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.world.level.GameRules;
@@ -24,7 +23,7 @@ public final class TicksController {
 	private TicksController() {
 	}
 
-	public static void beginFrame(DeltaTracker deltaTracker) {
+	public static void beginFrame(float partialTick) {
 		Minecraft minecraft = Minecraft.getInstance();
 		ClientLevel level = minecraft.level;
 		rendering = true;
@@ -37,7 +36,7 @@ public final class TicksController {
 		long now = System.nanoTime();
 		double target = level.getDayTime();
 		if (level.getGameRules().getBoolean(GameRules.RULE_DAYLIGHT)) {
-			target += deltaTracker.getGameTimeDeltaPartialTick(false);
+			target += partialTick;
 		}
 
 		if (!initialized || trackedLevel != level) {

@@ -4,7 +4,8 @@ plugins {
 }
 
 group = "dev.vercim.ticks"
-version = "${project.property("mod_version")}+${project.property("minecraft_version")}-neoforge"
+val minecraftVersion = stonecutter.current.version.substringBeforeLast('-')
+version = "${project.property("mod_version")}+$minecraftVersion-neoforge"
 base.archivesName = "ticks"
 
 java {
@@ -51,7 +52,7 @@ tasks.processResources {
 		"mod_description" to project.property("mod_description"),
 		"mod_homepage" to project.property("mod_homepage"),
 		"mod_issues" to project.property("mod_issues"),
-		"minecraft_version" to project.property("minecraft_version"),
+		"minecraft_version" to minecraftVersion,
 		"neoforge_version" to project.property("neoforge_version"),
 		"neoforge_loader_version_range" to project.property("neoforge_loader_version_range")
 	)
