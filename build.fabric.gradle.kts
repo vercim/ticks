@@ -3,12 +3,18 @@ plugins {
 	id("dev.kikugie.loom-back-compat")
 }
 
+val minecraftVersion = stonecutter.current.version.substringBeforeLast('-')
+val isLegacy = minecraftVersion == "1.20.1"
+val javaVersion = if (isLegacy) 17 else 21
+val fabricLoaderVersion = if (isLegacy) "0.15.11" else project.property("fabric_loader_version") as String
+val fabricLoaderMinVersion = if (isLegacy) "0.14.21" else project.property("fabric_loader_min_version") as String
+
 group = "dev.vercim.ticks"
-version = "${project.property("mod_version")}+${project.property("minecraft_version")}-fabric"
+version = "${project.property("mod_version")}+$minecraftVersion-fabric"
 base.archivesName = "ticks"
 
 java {
-	toolchain.languageVersion = JavaLanguageVersion.of(21)
+	toolchain.languageVersion = JavaLanguageVersion.of(javaVersion)
 	withSourcesJar()
 }
 
@@ -28,11 +34,11 @@ loom {
 }
 
 dependencies {
-	minecraft("com.mojang:minecraft:${project.property("minecraft_version")}")
+	minecraft("com.mojang:minecraft:$minecraftVersion")
 	mappings(loom.layered {
 		officialMojangMappings()
 	})
-	modImplementation("net.fabricmc:fabric-loader:${project.property("fabric_loader_version")}")
+	modImplementation("net.fabricmc:fabric-loader:$fabricLoaderVersion")
 
 	testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
@@ -49,8 +55,9 @@ tasks.processResources {
 		"mod_homepage" to project.property("mod_homepage"),
 		"mod_sources" to project.property("mod_sources"),
 		"mod_issues" to project.property("mod_issues"),
-		"minecraft_version" to project.property("minecraft_version"),
-		"fabric_loader_min_version" to project.property("fabric_loader_min_version")
+		"minecraft_version" to minecraftVersion,
+		"fabric_loader_min_version" to fabricLoaderMinVersion,
+		"java_version" to javaVersion
 	)
 	inputs.properties(metadata)
 	filesMatching("fabric.mod.json") {
@@ -59,7 +66,7 @@ tasks.processResources {
 }
 
 tasks.withType<JavaCompile>().configureEach {
-	options.release = 21
+	options.release = javaVersion
 }
 
 tasks.test {
