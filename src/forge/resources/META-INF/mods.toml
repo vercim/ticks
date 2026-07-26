@@ -14,7 +14,7 @@ logoBlur=false
 authors="${mod_authors}"
 
 [[mixins]]
-config="ticks.mixins.json"
+config="ticks.forge.mixins.json"
 
 [[dependencies.ticks]]
 modId="forge"
