@@ -6,8 +6,20 @@ plugins {
 
 group = "dev.vercim.ticks"
 val minecraftVersion = stonecutter.current.version.substringBeforeLast('-')
-val clothConfigVersion = project.property("cloth_config_current_version") as String
+val neoForgeVersion = when (minecraftVersion) {
+	"1.21.1" -> project.property("neoforge_version") as String
+	"1.21.4" -> project.property("neoforge_1_21_4_version") as String
+	else -> error("No NeoForge version is configured for Minecraft $minecraftVersion")
+}
+val minecraftVersionUpperBound = minecraftVersion.split(".").let { parts ->
+	"${parts[0]}.${parts[1]}.${parts[2].toInt() + 1}"
+}
 val releaseType = providers.gradleProperty("release_type").orElse("release").get()
+
+extra["ticksMinecraftVersion"] = minecraftVersion
+extra["ticksPlatform"] = "neoforge"
+apply(from = rootProject.file("gradle/preprocess-sources.gradle.kts"))
+
 version = "${project.property("mod_version")}+$minecraftVersion-neoforge"
 base.archivesName = "ticks"
 
@@ -17,7 +29,7 @@ java {
 }
 
 neoForge {
-	version = project.property("neoforge_version") as String
+	version = neoForgeVersion
 
 	runs {
 		register("client") {
@@ -38,11 +50,9 @@ sourceSets["main"].resources.srcDir(rootProject.file("src/neoforge/resources"))
 
 repositories {
 	mavenCentral()
-	maven("https://maven.shedaniel.me/") { name = "Shedaniel" }
 }
 
 dependencies {
-	compileOnly("me.shedaniel.cloth:cloth-config-neoforge:$clothConfigVersion")
 	testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
 	testImplementation("com.google.code.gson:gson:2.10.1")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
@@ -59,8 +69,9 @@ tasks.processResources {
 		"mod_homepage" to project.property("mod_homepage"),
 		"mod_issues" to project.property("mod_issues"),
 		"minecraft_version" to minecraftVersion,
-		"neoforge_version" to project.property("neoforge_version"),
-		"neoforge_loader_version_range" to project.property("neoforge_loader_version_range")
+		"neoforge_version" to neoForgeVersion,
+		"neoforge_loader_version_range" to project.property("neoforge_loader_version_range"),
+		"minecraft_version_upper_bound" to minecraftVersionUpperBound
 	)
 	inputs.properties(metadata)
 	filesMatching("META-INF/neoforge.mods.toml") {

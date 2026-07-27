@@ -22,9 +22,6 @@
   "entrypoints": {
     "client": [
       "dev.vercim.ticks.fabric.TicksFabric"
-    ],
-    "modmenu": [
-      "dev.vercim.ticks.fabric.TicksModMenu"
     ]
   },
   "depends": {

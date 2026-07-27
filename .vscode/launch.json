@@ -1,0 +1,73 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "request": "launch",
+      "name": "1.20.1-forge - Client",
+      "presentation": {
+        "group": "Mod Development - 1.20.1-forge",
+        "order": 0
+      },
+      "projectName": "1.20.1-forge",
+      "mainClass": "net.neoforged.devlaunch.Main",
+      "args": [
+        "@C:\\Users\\skuto\\Documents\\Git\\ticks\\versions\\1.20.1-forge\\build\\moddev\\clientRunProgramArgs.txt"
+      ],
+      "vmArgs": [
+        "@C:\\Users\\skuto\\Documents\\Git\\ticks\\versions\\1.20.1-forge\\build\\moddev\\clientRunVmArgs.txt",
+        "-Dfml.modFolders\u003dticks%%C:\\Users\\skuto\\Documents\\Git\\ticks\\versions\\1.20.1-forge\\bin\\main"
+      ],
+      "cwd": "${workspaceFolder}\\versions\\1.20.1-forge\\run",
+      "env": {
+        "MOD_CLASSES": "ticks%%C:\\Users\\skuto\\Documents\\Git\\ticks\\versions\\1.20.1-forge\\bin\\main"
+      },
+      "console": "internalConsole",
+      "shortenCommandLine": "none"
+    },
+    {
+      "type": "java",
+      "request": "launch",
+      "name": "1.21.1-neoforge - Client",
+      "presentation": {
+        "group": "Mod Development - 1.21.1-neoforge",
+        "order": 0
+      },
+      "projectName": "1.21.1-neoforge",
+      "mainClass": "net.neoforged.devlaunch.Main",
+      "args": [
+        "@C:\\Users\\skuto\\Documents\\Git\\ticks\\versions\\1.21.1-neoforge\\build\\moddev\\clientRunProgramArgs.txt"
+      ],
+      "vmArgs": [
+        "@C:\\Users\\skuto\\Documents\\Git\\ticks\\versions\\1.21.1-neoforge\\build\\moddev\\clientRunVmArgs.txt",
+        "-Dfml.modFolders\u003dticks%%C:\\Users\\skuto\\Documents\\Git\\ticks\\versions\\1.21.1-neoforge\\bin\\main"
+      ],
+      "cwd": "${workspaceFolder}\\versions\\1.21.1-neoforge\\run",
+      "env": {},
+      "console": "internalConsole",
+      "shortenCommandLine": "none"
+    },
+    {
+      "type": "java",
+      "request": "launch",
+      "name": "1.21.4-neoforge - Client",
+      "presentation": {
+        "group": "Mod Development - 1.21.4-neoforge",
+        "order": 0
+      },
+      "projectName": "1.21.4-neoforge",
+      "mainClass": "net.neoforged.devlaunch.Main",
+      "args": [
+        "@C:\\Users\\skuto\\Documents\\Git\\ticks\\versions\\1.21.4-neoforge\\build\\moddev\\clientRunProgramArgs.txt"
+      ],
+      "vmArgs": [
+        "@C:\\Users\\skuto\\Documents\\Git\\ticks\\versions\\1.21.4-neoforge\\build\\moddev\\clientRunVmArgs.txt",
+        "-Dfml.modFolders\u003dticks%%C:\\Users\\skuto\\Documents\\Git\\ticks\\versions\\1.21.4-neoforge\\bin\\main"
+      ],
+      "cwd": "${workspaceFolder}\\versions\\1.21.4-neoforge\\run",
+      "env": {},
+      "console": "internalConsole",
+      "shortenCommandLine": "none"
+    }
+  ]
+}

@@ -22,7 +22,6 @@ public final class TicksConfig {
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
 	private static Path file;
-	private static boolean enabled = true;
 	private static int transitionTimeMillis = DEFAULT_TRANSITION_TIME_MILLIS;
 
 	private TicksConfig() {
@@ -31,14 +30,9 @@ public final class TicksConfig {
 	public static synchronized void initialize(Path configDirectory) {
 		file = configDirectory.resolve("ticks.json");
 		load();
-	}
-
-	public static boolean isEnabled() {
-		return enabled;
-	}
-
-	public static void setEnabled(boolean value) {
-		enabled = value;
+		if (!Files.isRegularFile(file)) {
+			save();
+		}
 	}
 
 	public static int getTransitionTimeMillis() {
@@ -55,7 +49,6 @@ public final class TicksConfig {
 		}
 
 		JsonObject root = new JsonObject();
-		root.addProperty("enabled", enabled);
 		root.addProperty("transitionTimeMillis", transitionTimeMillis);
 
 		try {
@@ -69,7 +62,6 @@ public final class TicksConfig {
 	}
 
 	private static void load() {
-		enabled = true;
 		transitionTimeMillis = DEFAULT_TRANSITION_TIME_MILLIS;
 		if (!Files.isRegularFile(file)) {
 			return;
@@ -77,9 +69,6 @@ public final class TicksConfig {
 
 		try (Reader reader = Files.newBufferedReader(file)) {
 			JsonObject root = JsonParser.parseReader(reader).getAsJsonObject();
-			if (root.has("enabled") && root.get("enabled").isJsonPrimitive()) {
-				enabled = root.get("enabled").getAsBoolean();
-			}
 			if (root.has("transitionTimeMillis") && root.get("transitionTimeMillis").isJsonPrimitive()) {
 				setTransitionTimeMillis(root.get("transitionTimeMillis").getAsInt());
 			}
