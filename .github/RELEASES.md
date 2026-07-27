@@ -1,18 +1,5 @@
 # Release checklist
 
-## One-time GitHub setup
-
-Add these under **Settings > Secrets and variables > Actions**:
-
-| Type | Name |
-| --- | --- |
-| Variable | `CURSEFORGE_PROJECT_ID` |
-| Variable | `MODRINTH_PROJECT_ID` |
-| Secret | `CURSEFORGE_TOKEN` |
-| Secret | `MODRINTH_TOKEN` |
-
-Never commit tokens.
-
 ## Publish
 
 1. Set `mod_version` in `gradle.properties`:
