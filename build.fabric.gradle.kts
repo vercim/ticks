@@ -10,6 +10,7 @@ val javaVersion = if (isLegacy) 17 else 21
 val fabricLoaderVersion = if (isLegacy) "0.15.11" else project.property("fabric_loader_version") as String
 val fabricLoaderMinVersion = if (isLegacy) "0.14.21" else project.property("fabric_loader_min_version") as String
 val releaseType = providers.gradleProperty("release_type").orElse("release").get()
+val displayVersion = (project.property("mod_version") as String).substringBefore('-')
 
 extra["ticksMinecraftVersion"] = minecraftVersion
 extra["ticksPlatform"] = "fabric"
@@ -82,7 +83,7 @@ tasks.test {
 
 publishMods {
 	file.set(tasks.named<org.gradle.api.tasks.bundling.AbstractArchiveTask>("remapJar").flatMap { it.archiveFile })
-	displayName.set("${project.property("mod_version")}+$minecraftVersion")
+	displayName.set("$displayVersion+$minecraftVersion")
 	changelog.set(providers.environmentVariable("RELEASE_CHANGELOG").orElse("See the GitHub release notes."))
 	type.set(when (releaseType) {
 		"release" -> STABLE
@@ -101,6 +102,8 @@ publishMods {
 	}
 
 	modrinth {
+		displayName.set("Ticks $displayVersion Fabric")
+		version.set("$displayVersion+$minecraftVersion")
 		projectId.set(providers.gradleProperty("modrinth_project_id"))
 		accessToken.set(providers.environmentVariable("MODRINTH_TOKEN"))
 		minecraftVersions.add(minecraftVersion)
