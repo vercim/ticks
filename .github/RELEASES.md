@@ -27,7 +27,7 @@ Do not put either token in `gradle.properties`, a commit, or a tag message. `MOD
 
 The same channel is applied to CurseForge and Modrinth. JAR names include `mod_version`, so a beta such as `0.1.2-beta.1` cannot be mistaken for the final `0.1.2` release.
 
-Each uploaded file is displayed on CurseForge and Modrinth as `<mod_version>+<Minecraft version>` — for example, `0.1.2+1.21.1`. The same display name is used for different loaders of one Minecraft version; the platforms show the loader as compatibility metadata.
+CurseForge displays each uploaded file as the numeric part of `<mod_version>+<Minecraft version>` — for example, both `0.1.2` and `0.1.2-alpha.1` are displayed as `0.1.2+1.21.1`. Modrinth uses the same value as its Version number and the version subtitle `Ticks <numeric mod version> <loader>`, for example `Ticks 0.1.2 NeoForge`. The Alpha/Beta/Release type is shown by both platforms separately.
 
 ## Publish the release
 

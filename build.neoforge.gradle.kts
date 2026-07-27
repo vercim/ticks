@@ -15,6 +15,7 @@ val minecraftVersionUpperBound = minecraftVersion.split(".").let { parts ->
 	"${parts[0]}.${parts[1]}.${parts[2].toInt() + 1}"
 }
 val releaseType = providers.gradleProperty("release_type").orElse("release").get()
+val displayVersion = (project.property("mod_version") as String).substringBefore('-')
 
 extra["ticksMinecraftVersion"] = minecraftVersion
 extra["ticksPlatform"] = "neoforge"
@@ -89,7 +90,7 @@ tasks.test {
 
 publishMods {
 	file.set(tasks.named<org.gradle.api.tasks.bundling.Jar>("jar").flatMap { it.archiveFile })
-	displayName.set("${project.property("mod_version")}+$minecraftVersion")
+	displayName.set("$displayVersion+$minecraftVersion")
 	changelog.set(providers.environmentVariable("RELEASE_CHANGELOG").orElse("See the GitHub release notes."))
 	type.set(when (releaseType) {
 		"release" -> STABLE
@@ -108,6 +109,8 @@ publishMods {
 	}
 
 	modrinth {
+		displayName.set("Ticks $displayVersion NeoForge")
+		version.set("$displayVersion+$minecraftVersion")
 		projectId.set(providers.gradleProperty("modrinth_project_id"))
 		accessToken.set(providers.environmentVariable("MODRINTH_TOKEN"))
 		minecraftVersions.add(minecraftVersion)
