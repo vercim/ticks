@@ -29,3 +29,18 @@ Tests use JUnit Jupiter 5. Name files `*Test.java` and methods after observable 
 ## Commit & Pull Request Guidelines
 
 History is currently minimal; follow its imperative, title-case style (for example, `Add Ticks for Fabric and NeoForge`). Keep commits focused. Pull requests should explain behavior changes, list tested loader commands, link relevant issues, and include screenshots or short captures for visible rendering changes. Call out compatibility implications for Mixins, shader packs, or Minecraft versions.
+
+## Release Publishing
+
+Pushing a tag matching `v*` starts [`.github/workflows/release.yml`](.github/workflows/release.yml). `mod_version` in `gradle.properties` is the release source of truth: the tag must be exactly `v<mod_version>`. Use `-alpha` or `-beta` in `mod_version` for prereleases; the workflow assigns the same Alpha or Beta channel to GitHub Releases, CurseForge, and Modrinth. A version without either suffix is a stable release.
+
+The workflow builds and publishes all supported Stonecutter targets: `1.20.1-fabric`, `1.20.1-forge`, `1.21.1-fabric`, `1.21.1-neoforge`, `1.21.4-fabric`, and `1.21.4-neoforge`. Add a target to both the build and `publishMods` task lists in the workflow when introducing a new supported target.
+
+Repository configuration is required before publishing:
+
+- GitHub Action variables: `CURSEFORGE_PROJECT_ID` and `MODRINTH_PROJECT_ID` (the actual Modrinth project ID or slug).
+- GitHub Action secrets: `CURSEFORGE_TOKEN` and `MODRINTH_TOKEN`.
+
+Never add upload tokens to the repository, `gradle.properties`, tags, or logs. The platform display values intentionally omit prerelease suffixes: CurseForge file names and Modrinth Version numbers use `<numeric mod version>+<Minecraft version>` (for example, `0.1.2+1.21.1`), while Modrinth Version subtitles use `Ticks <numeric mod version> <loader>` (for example, `Ticks 0.1.2 NeoForge`).
+
+Before creating a release tag, run the test tasks for every supported target. If a release has uploaded to any platform and then fails, publish a new version and matching tag rather than replacing the existing release.
