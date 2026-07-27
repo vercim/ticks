@@ -12,12 +12,9 @@ import net.minecraft.world.level.dimension.DimensionType;
 public final class TicksController {
 	private static ClientLevel trackedLevel;
 	private static boolean rendering;
-	private static boolean initialized;
-	private static boolean pendingJump;
 	private static boolean dayTimeAdvances = true;
-	private static double renderedTime;
-	private static double offset;
-	private static long lastFrameNanos;
+	private static Float renderedSkyAngle;
+	private static final SkyTimeInterpolator INTERPOLATOR = new SkyTimeInterpolator();
 
 	private TicksController() {
 	}
@@ -45,30 +42,9 @@ public final class TicksController {
 		}
 		//?}
 
-		if (!initialized || trackedLevel != level) {
-			trackedLevel = level;
-			initialized = true;
-			pendingJump = false;
-			offset = 0.0;
-			renderedTime = target;
-			lastFrameNanos = now;
-			return;
-		}
-
-		if (pendingJump) {
-			offset = SkyTimeMath.shortestDifference(target, renderedTime);
-			pendingJump = false;
-		}
-
-		double elapsedSeconds = Math.max(0.0, (now - lastFrameNanos) / 1_000_000_000.0);
-		lastFrameNanos = now;
-		double transitionTimeSeconds = TicksConfig.getTransitionTimeMillis() / 1_000.0;
-		if (transitionTimeSeconds == 0.0) {
-			offset = 0.0;
-		} else {
-			offset *= Math.exp(-elapsedSeconds / transitionTimeSeconds);
-		}
-		renderedTime = target + offset;
+		INTERPOLATOR.update(level, target, now, TicksConfig.getTransitionTimeMillis());
+		trackedLevel = level;
+		renderedSkyAngle = SkyTimeMath.skyAngle(INTERPOLATOR.getRenderedTime());
 	}
 
 	public static void endFrame() {
@@ -88,33 +64,31 @@ public final class TicksController {
 	//?}
 
 	private static void trackDayTimeSet(ClientLevel level, long newDayTime) {
-		if (!initialized || trackedLevel != level) {
+		if (!INTERPOLATOR.isTracking(level)) {
 			return;
 		}
 
 		long previousDayTime = level.getDayTime();
 		long delta = newDayTime - previousDayTime;
 		if (delta != 0L && delta != 1L) {
-			pendingJump = true;
+			INTERPOLATOR.markTimeJump(level);
 		}
 	}
 
 	public static Float getSkyAngleOverride(DimensionType dimensionType, long vanillaDayTime) {
 		ClientLevel level = trackedLevel;
-		if (!rendering || !initialized || level == null || level.dimensionType() != dimensionType
+		if (!rendering || !INTERPOLATOR.isTracking(level) || level == null || level.dimensionType() != dimensionType
 				|| level.getDayTime() != vanillaDayTime || dimensionType.hasFixedTime()) {
 			return null;
 		}
-		return SkyTimeMath.skyAngle(renderedTime);
+		return renderedSkyAngle;
 	}
 
 	private static void reset() {
 		rendering = false;
 		trackedLevel = null;
-		initialized = false;
-		pendingJump = false;
 		dayTimeAdvances = true;
-		offset = 0.0;
-		lastFrameNanos = 0L;
+		renderedSkyAngle = null;
+		INTERPOLATOR.reset();
 	}
 }
