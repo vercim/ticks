@@ -1,6 +1,6 @@
 # Deploying a new version
 
-Pushing a release tag starts the `Release` GitHub Actions workflow. It builds all four supported targets, uploads the JARs to GitHub Releases, CurseForge, and Modrinth, and generates GitHub release notes from the commits since the previous release.
+Pushing a release tag starts the `Release` GitHub Actions workflow. It builds all six supported targets, uploads the JARs to GitHub Releases, CurseForge, and Modrinth, and generates GitHub release notes from the commits since the previous release.
 
 ## One-time repository setup
 
@@ -10,9 +10,10 @@ Create the CurseForge and Modrinth projects before publishing. Then add these re
 | --- | --- | --- |
 | Variable | `CURSEFORGE_PROJECT_ID` | Numeric ID of the CurseForge project. It is shown in the project URL or on its Overview page. |
 | Secret | `CURSEFORGE_TOKEN` | CurseForge API upload token. |
-| Secret | `MODRINTH_TOKEN` | Modrinth token with permission to upload versions to the `ticks` project. |
+| Variable | `MODRINTH_PROJECT_ID` | Project slug or the 8-character project ID from the Modrinth project page. For example, `my-mod` from `modrinth.com/mod/my-mod`. |
+| Secret | `MODRINTH_TOKEN` | Modrinth token with permission to upload versions to that project. |
 
-Do not put either token in `gradle.properties`, a commit, or a tag message. The Modrinth project is configured as `ticks`, matching the URL in the README.
+Do not put either token in `gradle.properties`, a commit, or a tag message. `MODRINTH_PROJECT_ID` must be the actual Modrinth project identifier; the mod ID `ticks` is not automatically a Modrinth project ID.
 
 ## Choose the version and channel
 
@@ -26,13 +27,15 @@ Do not put either token in `gradle.properties`, a commit, or a tag message. The 
 
 The same channel is applied to CurseForge and Modrinth. JAR names include `mod_version`, so a beta such as `0.1.2-beta.1` cannot be mistaken for the final `0.1.2` release.
 
+Each uploaded file is displayed on CurseForge and Modrinth as `<mod_version>+<Minecraft version>` — for example, `0.1.2+1.21.1`. The same display name is used for different loaders of one Minecraft version; the platforms show the loader as compatibility metadata.
+
 ## Publish the release
 
 1. Update `mod_version` in `gradle.properties` to the exact version being released.
 2. Run the tests for every target:
 
    ```powershell
-   .\gradlew.bat :1.20.1-fabric:test :1.20.1-forge:test :1.21.1-fabric:test :1.21.1-neoforge:test
+   .\gradlew.bat :1.20.1-fabric:test :1.20.1-forge:test :1.21.1-fabric:test :1.21.1-neoforge:test :1.21.4-fabric:test :1.21.4-neoforge:test
    ```
 
 3. Commit and push the version change and all intended release changes:
