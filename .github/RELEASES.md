@@ -32,11 +32,13 @@ CurseForge displays each uploaded file as the numeric part of `<mod_version>+<Mi
 ## Publish the release
 
 1. Update `mod_version` in `gradle.properties` to the exact version being released.
-2. Run the tests for every target:
+2. Clean, test, and build every configured Stonecutter target:
 
    ```powershell
-   .\gradlew.bat :1.20.1-fabric:test :1.20.1-forge:test :1.21.1-fabric:test :1.21.1-neoforge:test :1.21.4-fabric:test :1.21.4-neoforge:test
+   .\gradlew.bat clean build
    ```
+
+   The root task selection automatically includes every version and loader declared in `settings.gradle.kts`.
 
 3. Commit and push the version change and all intended release changes:
 
