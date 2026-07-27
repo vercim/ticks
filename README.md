@@ -35,7 +35,7 @@ ticks-0.1.0+1.21.1-fabric.jar
 
 ## Multi-loader and multi-version setup
 
-The project uses [Stonecutter](https://stonecutter.kikugie.dev/) to create four Gradle targets from one source tree.
+The project uses [Stonecutter](https://stonecutter.kikugie.dev/) to create six Gradle targets from one source tree.
 
 Each target selects its build script: Fabric uses Fabric Loom (with Loom Back Compat for 1.20.1), Forge uses NeoForge ModDev LegacyForge, and NeoForge uses NeoForge ModDev. Stonecutter conditional compilation in the shared sources handles API differences between Minecraft versions, such as the `GameRenderer#render` signature.
 
@@ -49,16 +49,13 @@ Ticks works automatically and creates `config/ticks.json` with the default trans
 
 ## Build
 
-Use the Gradle wrapper for the target you need:
+Use the root Gradle task to clean, test, and build every configured Stonecutter target:
 
 ```powershell
-.\gradlew.bat :1.20.1-fabric:build
-.\gradlew.bat :1.20.1-forge:build
-.\gradlew.bat :1.21.1-fabric:build
-.\gradlew.bat :1.21.1-neoforge:build
+.\gradlew.bat clean build
 ```
 
-Artifacts are written to `versions/<target>/build/libs/`. On Linux or macOS, replace `./gradlew.bat` with `./gradlew`.
+Gradle applies both task names to every subproject, so this builds all versions and loaders declared in `settings.gradle.kts`; no per-target list is needed. Artifacts are written to `versions/<target>/build/libs/`. On Linux or macOS, use `./gradlew clean build`.
 
 ---
 

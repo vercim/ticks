@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-Ticks is a client-only Minecraft 1.21.1 mod sharing one Java 21 codebase across Fabric and NeoForge. Core logic and mixins live under `src/main/java/dev/skuto/ticks/`; loader-neutral tests are in the matching `src/test/java/` package. Shared assets and Mixin configuration belong in `src/main/resources/`, while loader metadata stays in `src/fabric/resources/` or `src/neoforge/resources/`.
+Ticks is a client-only, multi-version Minecraft mod sharing one codebase across Fabric, Forge, and NeoForge. Core logic and mixins live under `src/main/java/dev/vercim/ticks/`; loader-neutral tests are in the matching `src/test/java/` package. Shared assets and Mixin configuration belong in `src/main/resources/`, while loader metadata stays in `src/fabric/resources/`, `src/forge/resources/`, or `src/neoforge/resources/`.
 
 Stonecutter generates loader-specific projects under `versions/`. Treat that directory, `build/`, and `run/` as generated output; edit the root sources and Gradle scripts instead. Dependency versions and mod metadata are centralized in `gradle.properties` and `gradle/libs.versions.toml`.
 
@@ -10,13 +10,12 @@ Stonecutter generates loader-specific projects under `versions/`. Treat that dir
 
 Use the checked-in Gradle wrapper. On Windows:
 
-- `.\gradlew.bat :1.21.1-fabric:build` — compile, test, and package the Fabric JAR.
-- `.\gradlew.bat :1.21.1-neoforge:build` — do the same for NeoForge.
-- `.\gradlew.bat :1.21.1-fabric:test` — run the JUnit suite for one target; replace `fabric` with `neoforge` to verify both mappings.
+- `.\gradlew.bat clean build` — clean, test, and package every Stonecutter target.
+- `.\gradlew.bat :1.21.1-fabric:test` — run only one target's JUnit suite when narrowing a failure.
 - `.\gradlew.bat runActiveClient` — launch the target selected by `.sc_active_version`.
 - `.\gradlew.bat :1.21.1-fabric:runClient` — launch a specific development client.
 
-Use `./gradlew` in Unix-like shells. Built artifacts appear in `versions/<target>/build/libs/`.
+Unqualified task names such as `clean`, `build`, and `publishMods` are selected across every Gradle subproject, so do not maintain explicit target lists. Use `./gradlew` in Unix-like shells. Built artifacts appear in `versions/<target>/build/libs/`.
 
 ## Coding Style & Naming Conventions
 
@@ -34,7 +33,7 @@ History is currently minimal; follow its imperative, title-case style (for examp
 
 Pushing a tag matching `v*` starts [`.github/workflows/release.yml`](.github/workflows/release.yml). `mod_version` in `gradle.properties` is the release source of truth: the tag must be exactly `v<mod_version>`. Use `-alpha` or `-beta` in `mod_version` for prereleases; the workflow assigns the same Alpha or Beta channel to GitHub Releases, CurseForge, and Modrinth. A version without either suffix is a stable release.
 
-The workflow builds and publishes all supported Stonecutter targets: `1.20.1-fabric`, `1.20.1-forge`, `1.21.1-fabric`, `1.21.1-neoforge`, `1.21.4-fabric`, and `1.21.4-neoforge`. Add a target to both the build and `publishMods` task lists in the workflow when introducing a new supported target.
+The workflow runs the root `clean build` and `publishMods` task selectors. Gradle applies them to all supported Stonecutter subprojects, so adding a target in `settings.gradle.kts` automatically includes it in CI builds and publishing.
 
 Repository configuration is required before publishing:
 
@@ -43,4 +42,4 @@ Repository configuration is required before publishing:
 
 Never add upload tokens to the repository, `gradle.properties`, tags, or logs. The platform display values intentionally omit prerelease suffixes: CurseForge file names and Modrinth Version numbers use `<numeric mod version>+<Minecraft version>` (for example, `0.1.2+1.21.1`), while Modrinth Version subtitles use `Ticks <numeric mod version> <loader>` (for example, `Ticks 0.1.2 NeoForge`).
 
-Before creating a release tag, run the test tasks for every supported target. If a release has uploaded to any platform and then fails, publish a new version and matching tag rather than replacing the existing release.
+Before creating a release tag, run `.\gradlew.bat clean build`. If a release has uploaded to any platform and then fails, publish a new version and matching tag rather than replacing the existing release.

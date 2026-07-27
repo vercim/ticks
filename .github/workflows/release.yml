@@ -55,18 +55,8 @@ jobs:
 
           echo "release_type=$release_type" >> "$GITHUB_OUTPUT"
 
-      - name: Select Stonecutter target
-        run: echo '1.21.1-fabric' > .sc_active_version
-
       - name: Build all supported targets
-        run: >-
-          ./gradlew
-          :1.20.1-fabric:build
-          :1.20.1-forge:build
-          :1.21.1-fabric:build
-          :1.21.1-neoforge:build
-          :1.21.4-fabric:build
-          :1.21.4-neoforge:build
+        run: ./gradlew clean build --no-daemon
 
       - name: Verify publishing configuration
         env:
@@ -105,11 +95,4 @@ jobs:
           ORG_GRADLE_PROJECT_modrinth_project_id: ${{ vars.MODRINTH_PROJECT_ID }}
           ORG_GRADLE_PROJECT_release_type: ${{ steps.release_metadata.outputs.release_type }}
           RELEASE_CHANGELOG: See GitHub release notes for ${{ github.ref_name }}.
-        run: >-
-          ./gradlew
-          :1.20.1-fabric:publishMods
-          :1.20.1-forge:publishMods
-          :1.21.1-fabric:publishMods
-          :1.21.1-neoforge:publishMods
-          :1.21.4-fabric:publishMods
-          :1.21.4-neoforge:publishMods
+        run: ./gradlew publishMods --no-daemon
