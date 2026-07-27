@@ -43,9 +43,13 @@ Each target selects its build script: Fabric uses Fabric Loom (with Loom Back Co
 
 No additional mod dependencies; Fabric API is not required
 
+Ticks supports an in-game Cloth Config screen when Cloth Config is installed. Mod Menu is also optional on Fabric.
+
 ## Configuration
 
 Ticks works automatically and has no configuration screen or config file. It is client-side only and does not need to be installed on a server.
+
+When Cloth Config is installed, open its configuration screen from Mod Menu on Fabric or the Mods screen on Forge and NeoForge; the screen currently has one General category in English.
 
 ## Build
 

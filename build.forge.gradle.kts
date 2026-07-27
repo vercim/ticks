@@ -1,10 +1,13 @@
 plugins {
 	java
 	id("net.neoforged.moddev.legacyforge")
+	id("me.modmuss50.mod-publish-plugin")
 }
 
 val minecraftVersion = stonecutter.current.version.substringBeforeLast('-')
 val javaVersion = 17
+val clothConfigVersion = project.property("cloth_config_legacy_version") as String
+val releaseType = providers.gradleProperty("release_type").orElse("release").get()
 
 group = "dev.vercim.ticks"
 version = "${project.property("mod_version")}+$minecraftVersion-forge"
@@ -42,11 +45,14 @@ sourceSets["main"].resources.srcDir(rootProject.file("src/forge/resources"))
 
 repositories {
 	mavenCentral()
+	maven("https://maven.shedaniel.me/") { name = "Shedaniel" }
 }
 
 dependencies {
 	annotationProcessor("org.spongepowered:mixin:0.8.5:processor")
+	compileOnly("me.shedaniel.cloth:cloth-config-forge:$clothConfigVersion")
 	testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
+	testImplementation("com.google.code.gson:gson:2.10.1")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
@@ -80,4 +86,30 @@ tasks.jar {
 
 tasks.test {
 	useJUnitPlatform()
+}
+
+publishMods {
+	file.set(tasks.named<org.gradle.api.tasks.bundling.Jar>("jar").flatMap { it.archiveFile })
+	changelog.set(providers.environmentVariable("RELEASE_CHANGELOG").orElse("See the GitHub release notes."))
+	type.set(when (releaseType) {
+		"release" -> STABLE
+		"beta" -> BETA
+		"alpha" -> ALPHA
+		else -> error("Unsupported release_type '$releaseType'. Use release, beta, or alpha.")
+	})
+	modLoaders.add("forge")
+
+	curseforge {
+		projectId.set(providers.gradleProperty("curseforge_project_id"))
+		accessToken.set(providers.environmentVariable("CURSEFORGE_TOKEN"))
+		minecraftVersions.add(minecraftVersion)
+		client.set(true)
+		server.set(false)
+	}
+
+	modrinth {
+		projectId.set("ticks")
+		accessToken.set(providers.environmentVariable("MODRINTH_TOKEN"))
+		minecraftVersions.add(minecraftVersion)
+	}
 }

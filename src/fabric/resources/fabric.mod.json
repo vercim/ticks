@@ -19,6 +19,14 @@
       "environment": "client"
     }
   ],
+  "entrypoints": {
+    "client": [
+      "dev.vercim.ticks.fabric.TicksFabric"
+    ],
+    "modmenu": [
+      "dev.vercim.ticks.fabric.TicksModMenu"
+    ]
+  },
   "depends": {
     "fabricloader": ">=${fabric_loader_min_version}",
     "minecraft": "${minecraft_version}",

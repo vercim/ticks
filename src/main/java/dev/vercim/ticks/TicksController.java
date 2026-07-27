@@ -10,8 +10,6 @@ import net.minecraft.world.level.dimension.DimensionType;
  * whole-tick time; only calls made while a frame is rendered see this value.
  */
 public final class TicksController {
-	private static final double TRANSITION_TIME_CONSTANT_SECONDS = 0.20;
-
 	private static ClientLevel trackedLevel;
 	private static boolean rendering;
 	private static boolean initialized;
@@ -24,6 +22,11 @@ public final class TicksController {
 	}
 
 	public static void beginFrame(float partialTick) {
+		if (!TicksConfig.isEnabled()) {
+			reset();
+			return;
+		}
+
 		Minecraft minecraft = Minecraft.getInstance();
 		ClientLevel level = minecraft.level;
 		rendering = true;
@@ -56,7 +59,12 @@ public final class TicksController {
 
 		double elapsedSeconds = Math.max(0.0, (now - lastFrameNanos) / 1_000_000_000.0);
 		lastFrameNanos = now;
-		offset *= Math.exp(-elapsedSeconds / TRANSITION_TIME_CONSTANT_SECONDS);
+		double transitionTimeSeconds = TicksConfig.getTransitionTimeMillis() / 1_000.0;
+		if (transitionTimeSeconds == 0.0) {
+			offset = 0.0;
+		} else {
+			offset *= Math.exp(-elapsedSeconds / transitionTimeSeconds);
+		}
 		renderedTime = target + offset;
 	}
 
@@ -86,6 +94,7 @@ public final class TicksController {
 	}
 
 	private static void reset() {
+		rendering = false;
 		trackedLevel = null;
 		initialized = false;
 		pendingJump = false;
