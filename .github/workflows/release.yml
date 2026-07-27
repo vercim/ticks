@@ -1,4 +1,5 @@
 name: Release
+run-name: Release ${{ github.ref_name }}
 
 on:
   push:
@@ -64,15 +65,19 @@ jobs:
           :1.20.1-forge:build
           :1.21.1-fabric:build
           :1.21.1-neoforge:build
+          :1.21.4-fabric:build
+          :1.21.4-neoforge:build
 
       - name: Verify publishing configuration
         env:
           CURSEFORGE_PROJECT_ID: ${{ vars.CURSEFORGE_PROJECT_ID }}
           CURSEFORGE_TOKEN: ${{ secrets.CURSEFORGE_TOKEN }}
+          MODRINTH_PROJECT_ID: ${{ vars.MODRINTH_PROJECT_ID }}
           MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
         run: |
           test -n "$CURSEFORGE_PROJECT_ID" || { echo "Missing CURSEFORGE_PROJECT_ID repository variable."; exit 1; }
           test -n "$CURSEFORGE_TOKEN" || { echo "Missing CURSEFORGE_TOKEN repository secret."; exit 1; }
+          test -n "$MODRINTH_PROJECT_ID" || { echo "Missing MODRINTH_PROJECT_ID repository variable."; exit 1; }
           test -n "$MODRINTH_TOKEN" || { echo "Missing MODRINTH_TOKEN repository secret."; exit 1; }
 
       - name: Create or update the GitHub release
@@ -97,6 +102,7 @@ jobs:
           CURSEFORGE_TOKEN: ${{ secrets.CURSEFORGE_TOKEN }}
           MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
           ORG_GRADLE_PROJECT_curseforge_project_id: ${{ vars.CURSEFORGE_PROJECT_ID }}
+          ORG_GRADLE_PROJECT_modrinth_project_id: ${{ vars.MODRINTH_PROJECT_ID }}
           ORG_GRADLE_PROJECT_release_type: ${{ steps.release_metadata.outputs.release_type }}
           RELEASE_CHANGELOG: See GitHub release notes for ${{ github.ref_name }}.
         run: >-
@@ -105,3 +111,5 @@ jobs:
           :1.20.1-forge:publishMods
           :1.21.1-fabric:publishMods
           :1.21.1-neoforge:publishMods
+          :1.21.4-fabric:publishMods
+          :1.21.4-neoforge:publishMods

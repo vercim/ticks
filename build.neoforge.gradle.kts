@@ -89,6 +89,7 @@ tasks.test {
 
 publishMods {
 	file.set(tasks.named<org.gradle.api.tasks.bundling.Jar>("jar").flatMap { it.archiveFile })
+	displayName.set("${project.property("mod_version")}+$minecraftVersion")
 	changelog.set(providers.environmentVariable("RELEASE_CHANGELOG").orElse("See the GitHub release notes."))
 	type.set(when (releaseType) {
 		"release" -> STABLE
@@ -107,7 +108,7 @@ publishMods {
 	}
 
 	modrinth {
-		projectId.set("ticks")
+		projectId.set(providers.gradleProperty("modrinth_project_id"))
 		accessToken.set(providers.environmentVariable("MODRINTH_TOKEN"))
 		minecraftVersions.add(minecraftVersion)
 	}
