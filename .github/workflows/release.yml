@@ -54,6 +54,9 @@ jobs:
 
           echo "release_type=$release_type" >> "$GITHUB_OUTPUT"
 
+      - name: Select Stonecutter target
+        run: echo '1.21.1-fabric' > .sc_active_version
+
       - name: Build all supported targets
         run: >-
           ./gradlew
