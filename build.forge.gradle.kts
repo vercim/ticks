@@ -6,8 +6,11 @@ plugins {
 
 val minecraftVersion = stonecutter.current.version.substringBeforeLast('-')
 val javaVersion = 17
-val clothConfigVersion = project.property("cloth_config_legacy_version") as String
 val releaseType = providers.gradleProperty("release_type").orElse("release").get()
+
+extra["ticksMinecraftVersion"] = minecraftVersion
+extra["ticksPlatform"] = "forge"
+apply(from = rootProject.file("gradle/preprocess-sources.gradle.kts"))
 
 group = "dev.vercim.ticks"
 version = "${project.property("mod_version")}+$minecraftVersion-forge"
@@ -45,12 +48,10 @@ sourceSets["main"].resources.srcDir(rootProject.file("src/forge/resources"))
 
 repositories {
 	mavenCentral()
-	maven("https://maven.shedaniel.me/") { name = "Shedaniel" }
 }
 
 dependencies {
 	annotationProcessor("org.spongepowered:mixin:0.8.5:processor")
-	compileOnly("me.shedaniel.cloth:cloth-config-forge:$clothConfigVersion")
 	testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
 	testImplementation("com.google.code.gson:gson:2.10.1")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")

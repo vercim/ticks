@@ -9,17 +9,11 @@ val isLegacy = minecraftVersion == "1.20.1"
 val javaVersion = if (isLegacy) 17 else 21
 val fabricLoaderVersion = if (isLegacy) "0.15.11" else project.property("fabric_loader_version") as String
 val fabricLoaderMinVersion = if (isLegacy) "0.14.21" else project.property("fabric_loader_min_version") as String
-val clothConfigVersion = if (isLegacy) {
-	project.property("cloth_config_legacy_version") as String
-} else {
-	project.property("cloth_config_current_version") as String
-}
-val modMenuVersion = if (isLegacy) {
-	project.property("modmenu_legacy_version") as String
-} else {
-	project.property("modmenu_current_version") as String
-}
 val releaseType = providers.gradleProperty("release_type").orElse("release").get()
+
+extra["ticksMinecraftVersion"] = minecraftVersion
+extra["ticksPlatform"] = "fabric"
+apply(from = rootProject.file("gradle/preprocess-sources.gradle.kts"))
 
 group = "dev.vercim.ticks"
 version = "${project.property("mod_version")}+$minecraftVersion-fabric"
@@ -32,11 +26,8 @@ java {
 
 repositories {
 	mavenCentral()
-	maven("https://maven.shedaniel.me/") { name = "Shedaniel" }
-	maven("https://maven.terraformersmc.com/releases/") { name = "Terraformers" }
 }
 
-sourceSets["main"].java.srcDir(rootProject.file("src/fabric/java"))
 sourceSets["main"].resources.srcDir(rootProject.file("src/fabric/resources"))
 
 loom {
@@ -54,8 +45,6 @@ dependencies {
 		officialMojangMappings()
 	})
 	modImplementation("net.fabricmc:fabric-loader:$fabricLoaderVersion")
-	modCompileOnly("me.shedaniel.cloth:cloth-config-fabric:$clothConfigVersion")
-	modCompileOnly("com.terraformersmc:modmenu:$modMenuVersion")
 
 	testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
 	testImplementation("com.google.code.gson:gson:2.10.1")

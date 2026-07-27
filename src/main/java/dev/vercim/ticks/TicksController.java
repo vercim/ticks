@@ -14,6 +14,7 @@ public final class TicksController {
 	private static boolean rendering;
 	private static boolean initialized;
 	private static boolean pendingJump;
+	private static boolean dayTimeAdvances = true;
 	private static double renderedTime;
 	private static double offset;
 	private static long lastFrameNanos;
@@ -22,11 +23,6 @@ public final class TicksController {
 	}
 
 	public static void beginFrame(float partialTick) {
-		if (!TicksConfig.isEnabled()) {
-			reset();
-			return;
-		}
-
 		Minecraft minecraft = Minecraft.getInstance();
 		ClientLevel level = minecraft.level;
 		rendering = true;
@@ -38,9 +34,16 @@ public final class TicksController {
 
 		long now = System.nanoTime();
 		double target = level.getDayTime();
+		//? >=1.21.4 {
+		/*if (dayTimeAdvances) {
+			target += partialTick;
+		}
+		*///?}
+		//? <1.21.4 {
 		if (level.getGameRules().getBoolean(GameRules.RULE_DAYLIGHT)) {
 			target += partialTick;
 		}
+		//?}
 
 		if (!initialized || trackedLevel != level) {
 			trackedLevel = level;
@@ -72,7 +75,19 @@ public final class TicksController {
 		rendering = false;
 	}
 
+	//? >=1.21.4 {
+	/*public static void onDayTimeSet(ClientLevel level, long newDayTime, boolean tickDayTime) {
+		dayTimeAdvances = tickDayTime;
+		trackDayTimeSet(level, newDayTime);
+	}
+	*///?}
+	//? <1.21.4 {
 	public static void onDayTimeSet(ClientLevel level, long newDayTime) {
+		trackDayTimeSet(level, newDayTime);
+	}
+	//?}
+
+	private static void trackDayTimeSet(ClientLevel level, long newDayTime) {
 		if (!initialized || trackedLevel != level) {
 			return;
 		}
@@ -98,6 +113,7 @@ public final class TicksController {
 		trackedLevel = null;
 		initialized = false;
 		pendingJump = false;
+		dayTimeAdvances = true;
 		offset = 0.0;
 		lastFrameNanos = 0L;
 	}

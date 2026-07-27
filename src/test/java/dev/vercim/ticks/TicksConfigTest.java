@@ -1,19 +1,18 @@
 package dev.vercim.ticks;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.jupiter.api.AfterEach;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import java.io.Reader;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 class TicksConfigTest {
-	@AfterEach
-	void restoreDefaults() {
-		TicksConfig.setEnabled(true);
-		TicksConfig.setTransitionTimeMillis(TicksConfig.DEFAULT_TRANSITION_TIME_MILLIS);
-	}
-
 	@Test
 	void transitionTimeIsClampedToSupportedRange() {
 		TicksConfig.setTransitionTimeMillis(-1);
@@ -24,11 +23,14 @@ class TicksConfigTest {
 	}
 
 	@Test
-	void enabledFlagCanBeChangedWithoutTouchingSimulation() {
-		TicksConfig.setEnabled(false);
-		assertFalse(TicksConfig.isEnabled());
+	void firstInitializationWritesDefaultConfiguration(@TempDir Path configDirectory) throws Exception {
+		TicksConfig.initialize(configDirectory);
 
-		TicksConfig.setEnabled(true);
-		assertTrue(TicksConfig.isEnabled());
+		Path configFile = configDirectory.resolve("ticks.json");
+		assertTrue(Files.isRegularFile(configFile));
+		try (Reader reader = Files.newBufferedReader(configFile)) {
+			JsonObject root = JsonParser.parseReader(reader).getAsJsonObject();
+			assertEquals(TicksConfig.DEFAULT_TRANSITION_TIME_MILLIS, root.get("transitionTimeMillis").getAsInt());
+		}
 	}
 }

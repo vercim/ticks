@@ -26,6 +26,6 @@ side="CLIENT"
 [[dependencies.ticks]]
 modId="minecraft"
 type="required"
-versionRange="[${minecraft_version},1.21.2)"
+versionRange="[${minecraft_version},${minecraft_version_upper_bound})"
 ordering="NONE"
 side="CLIENT"
