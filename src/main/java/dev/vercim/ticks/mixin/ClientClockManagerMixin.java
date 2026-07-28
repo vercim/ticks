@@ -29,7 +29,8 @@ abstract class ClientClockManagerMixin {
 		for (Map.Entry<Holder<WorldClock>, ClockNetworkState> entry : updates.entrySet()) {
 			if (entry.getKey().is(WorldClocks.OVERWORLD)) {
 				ClockNetworkState state = entry.getValue();
-				TicksController.onClockUpdate(level, state.totalTicks(), state.rate());
+				TicksController.onClockUpdate(
+						level, gameTime, state.totalTicks(), state.partialTick(), state.rate());
 				return;
 			}
 		}
