@@ -56,7 +56,25 @@ jobs:
           echo "release_type=$release_type" >> "$GITHUB_OUTPUT"
 
       - name: Build all supported targets
-        run: ./gradlew clean build --no-daemon
+        run: ./gradlew clean buildAndCollect --no-daemon
+
+      - name: Verify all supported target JARs
+        shell: bash
+        run: |
+          mapfile -t target_dirs < <(find versions -mindepth 1 -maxdepth 1 -type d | sort)
+          test "${#target_dirs[@]}" -gt 0 || { echo "No Stonecutter targets were found."; exit 1; }
+
+          for target_dir in "${target_dirs[@]}"; do
+            mapfile -t artifacts < <(
+              find "$target_dir/build/libs" -maxdepth 1 -type f -name '*.jar' \
+                ! -name '*-sources.jar' ! -name '*-dev.jar' 2>/dev/null | sort
+            )
+            test "${#artifacts[@]}" -eq 1 || {
+              echo "Expected exactly one release JAR in $target_dir/build/libs, found ${#artifacts[@]}."
+              printf '  %s\n' "${artifacts[@]}"
+              exit 1
+            }
+          done
 
       - name: Verify publishing configuration
         env:
@@ -78,14 +96,6 @@ jobs:
             echo "GitHub release $GITHUB_REF_NAME already exists. Do not overwrite a published release; publish a new version and tag."
             exit 1
           fi
-
-          mapfile -t target_dirs < <(find versions -mindepth 1 -maxdepth 1 -type d | sort)
-          mapfile -t artifacts < <(find versions -path '*/build/libs/*.jar' -type f ! -name '*-sources.jar' ! -name '*-dev.jar' | sort)
-          test "${#target_dirs[@]}" -gt 0 || { echo "No Stonecutter targets were found."; exit 1; }
-          test "${#artifacts[@]}" -eq "${#target_dirs[@]}" || {
-            echo "Expected one release JAR for each Stonecutter target, found ${#artifacts[@]} JARs for ${#target_dirs[@]} targets."
-            exit 1
-          }
 
       - name: Publish to CurseForge and Modrinth
         env:

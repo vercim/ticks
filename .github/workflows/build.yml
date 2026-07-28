@@ -2,10 +2,18 @@ name: Build
 
 on:
   push:
+    branches:
+      - main
   pull_request:
+    branches:
+      - main
 
 permissions:
   contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -27,14 +35,22 @@ jobs:
           cache: gradle
 
       - name: Build all supported targets
-        run: ./gradlew clean build --no-daemon
+        run: ./gradlew buildAndCollect --no-daemon
 
-      - name: Upload built JARs
-        uses: actions/upload-artifact@v4
-        with:
-          name: ticks-jars
-          path: |
-            versions/*/build/libs/*.jar
-            !versions/*/build/libs/*-sources.jar
-            !versions/*/build/libs/*-dev.jar
-          if-no-files-found: error
+      - name: Verify all supported target JARs
+        shell: bash
+        run: |
+          mapfile -t target_dirs < <(find versions -mindepth 1 -maxdepth 1 -type d | sort)
+          test "${#target_dirs[@]}" -gt 0 || { echo "No Stonecutter targets were found."; exit 1; }
+
+          for target_dir in "${target_dirs[@]}"; do
+            mapfile -t artifacts < <(
+              find "$target_dir/build/libs" -maxdepth 1 -type f -name '*.jar' \
+                ! -name '*-sources.jar' ! -name '*-dev.jar' 2>/dev/null | sort
+            )
+            test "${#artifacts[@]}" -eq 1 || {
+              echo "Expected exactly one release JAR in $target_dir/build/libs, found ${#artifacts[@]}."
+              printf '  %s\n' "${artifacts[@]}"
+              exit 1
+            }
+          done
