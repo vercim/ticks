@@ -77,7 +77,10 @@ tasks.processResources {
 		expand(metadata)
 	}
 	filesMatching("ticks.mixins.json") {
-		expand("sky_renderer_mixin" to "")
+		expand(
+			"sky_renderer_mixin" to "",
+			"clock_manager_mixin" to ""
+		)
 	}
 }
 

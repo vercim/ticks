@@ -10,11 +10,14 @@ val neoForgeVersion = when (minecraftVersion) {
 	"1.21.1" -> project.property("neoforge_version") as String
 	"1.21.4" -> project.property("neoforge_1_21_4_version") as String
 	"1.21.11" -> project.property("neoforge_1_21_11_version") as String
+	"26.1" -> project.property("neoforge_26_1_version") as String
 	else -> error("No NeoForge version is configured for Minecraft $minecraftVersion")
 }
-val minecraftVersionUpperBound = minecraftVersion.split(".").let { parts ->
-	"${parts[0]}.${parts[1]}.${parts[2].toInt() + 1}"
+val minecraftVersionUpperBound = minecraftVersion.split(".").toMutableList().let { parts ->
+	parts[parts.lastIndex] = (parts.last().toInt() + 1).toString()
+	parts.joinToString(".")
 }
+val javaVersion = if (minecraftVersion.startsWith("26.")) 25 else 21
 val releaseType = providers.gradleProperty("release_type").orElse("release").get()
 val displayVersion = (project.property("mod_version") as String).substringBefore('-')
 
@@ -26,7 +29,7 @@ version = "${project.property("mod_version")}+$minecraftVersion-neoforge"
 base.archivesName = "ticks"
 
 java {
-	toolchain.languageVersion = JavaLanguageVersion.of(21)
+	toolchain.languageVersion = JavaLanguageVersion.of(javaVersion)
 	withSourcesJar()
 }
 
@@ -80,12 +83,20 @@ tasks.processResources {
 		expand(metadata)
 	}
 	filesMatching("ticks.mixins.json") {
-		expand("sky_renderer_mixin" to if (minecraftVersion == "1.21.11") ",\n    \"SkyRendererMixin\"" else "")
+		val isUnobfuscated = minecraftVersion.startsWith("26.")
+		expand(
+			"sky_renderer_mixin" to when {
+				isUnobfuscated -> ",\n    \"SkyRenderer26Mixin\""
+				minecraftVersion == "1.21.11" -> ",\n    \"SkyRendererMixin\""
+				else -> ""
+			},
+			"clock_manager_mixin" to if (isUnobfuscated) ",\n    \"ClientClockManagerMixin\"" else ""
+		)
 	}
 }
 
 tasks.withType<JavaCompile>().configureEach {
-	options.release = 21
+	options.release = javaVersion
 }
 
 tasks.test {

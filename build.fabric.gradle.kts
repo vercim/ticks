@@ -6,7 +6,12 @@ plugins {
 
 val minecraftVersion = stonecutter.current.version.substringBeforeLast('-')
 val isLegacy = minecraftVersion == "1.20.1"
-val javaVersion = if (isLegacy) 17 else 21
+val isUnobfuscated = minecraftVersion.startsWith("26.")
+val javaVersion = when {
+	isLegacy -> 17
+	isUnobfuscated -> 25
+	else -> 21
+}
 val fabricLoaderVersion = if (isLegacy) "0.15.11" else project.property("fabric_loader_version") as String
 val fabricLoaderMinVersion = if (isLegacy) "0.14.21" else project.property("fabric_loader_min_version") as String
 val releaseType = providers.gradleProperty("release_type").orElse("release").get()
@@ -42,9 +47,7 @@ loom {
 
 dependencies {
 	minecraft("com.mojang:minecraft:$minecraftVersion")
-	mappings(loom.layered {
-		officialMojangMappings()
-	})
+	loomx.applyMojangMappings()
 	modImplementation("net.fabricmc:fabric-loader:$fabricLoaderVersion")
 
 	testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
@@ -72,7 +75,14 @@ tasks.processResources {
 		expand(metadata)
 	}
 	filesMatching("ticks.mixins.json") {
-		expand("sky_renderer_mixin" to if (minecraftVersion == "1.21.11") ",\n    \"SkyRendererMixin\"" else "")
+		expand(
+			"sky_renderer_mixin" to when {
+				isUnobfuscated -> ",\n    \"SkyRenderer26Mixin\""
+				minecraftVersion == "1.21.11" -> ",\n    \"SkyRendererMixin\""
+				else -> ""
+			},
+			"clock_manager_mixin" to if (isUnobfuscated) ",\n    \"ClientClockManagerMixin\"" else ""
+		)
 	}
 }
 
@@ -87,13 +97,13 @@ tasks.test {
 tasks.register<Copy>("buildAndCollect") {
 	group = "build"
 	description = "Builds this target and copies its distributable JAR to the root collection directory."
-	from(tasks.named<org.gradle.api.tasks.bundling.AbstractArchiveTask>("remapJar").flatMap { it.archiveFile })
+	from(loomx.modJar.flatMap { it.archiveFile })
 	into(rootProject.layout.buildDirectory.dir("libs/${project.property("mod_version")}"))
 	dependsOn("build")
 }
 
 publishMods {
-	file.set(tasks.named<org.gradle.api.tasks.bundling.AbstractArchiveTask>("remapJar").flatMap { it.archiveFile })
+	file.set(loomx.modJar.flatMap { it.archiveFile })
 	displayName.set("$displayVersion+$minecraftVersion")
 	changelog.set(providers.environmentVariable("RELEASE_CHANGELOG").orElse("See the GitHub release notes."))
 	type.set(when (releaseType) {

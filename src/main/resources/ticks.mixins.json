@@ -7,7 +7,7 @@
     "defaultRequire": 1
   },
   "client": [
-    "ClientLevelMixin",
+    "ClientLevelMixin"${clock_manager_mixin},
     "DimensionTypeMixin",
     "GameRendererMixin"${sky_renderer_mixin}
   ]

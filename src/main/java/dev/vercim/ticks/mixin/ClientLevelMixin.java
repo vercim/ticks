@@ -9,6 +9,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ClientLevel.class)
 abstract class ClientLevelMixin {
+	//? <26 {
 	//? >=1.21.4 {
 	/*@Inject(method = "setTimeFromServer", at = @At("HEAD"))
 	private void ticks$trackTimeUpdate(long gameTime, long dayTime, boolean tickDayTime, CallbackInfo callbackInfo) {
@@ -20,5 +21,6 @@ abstract class ClientLevelMixin {
 	private void ticks$trackTimeJump(long dayTime, CallbackInfo callbackInfo) {
 		TicksController.onDayTimeSet((ClientLevel) (Object) this, dayTime);
 	}
+	//?}
 	//?}
 }

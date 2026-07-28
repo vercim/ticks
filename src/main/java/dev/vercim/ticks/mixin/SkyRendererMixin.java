@@ -1,6 +1,7 @@
 package dev.vercim.ticks.mixin;
 
 //? >=1.21.11 {
+//? <26 {
 /*import dev.vercim.ticks.TicksController;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -21,7 +22,8 @@ abstract class SkyRendererMixin {
 	@Inject(method = "extractRenderState", at = @At("RETURN"))
 	private void ticks$useSmoothedSkyAngles(ClientLevel level, float partialTick, Camera camera, SkyRenderState renderState,
 			CallbackInfo callbackInfo) {
-		Float angle = TicksController.getSkyAngleOverride(level.dimensionType(), level.getDayTime());
+		long skyTime = level.getDayTime();
+		Float angle = TicksController.getSkyAngleOverride(level.dimensionType(), skyTime);
 		if (angle != null) {
 			float sunAndStarAngle = angle * ((float) Math.PI * 2.0F);
 			renderState.sunAngle = sunAndStarAngle;
@@ -32,3 +34,4 @@ abstract class SkyRendererMixin {
 	}
 }
 *///?}
+//?}
