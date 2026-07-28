@@ -2,7 +2,7 @@
 
 plugins {
 	id("dev.kikugie.stonecutter")
-	id("net.fabricmc.fabric-loom-remap") version "1.16.3" apply false
+	id("net.fabricmc.fabric-loom-remap") version "1.17.17" apply false
 }
 
 val activeVersionFile = file(".sc_active_version")

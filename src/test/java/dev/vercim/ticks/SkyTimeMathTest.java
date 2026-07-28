@@ -7,6 +7,11 @@ import org.junit.jupiter.api.Test;
 
 class SkyTimeMathTest {
 	@Test
+	void acceleratedClockAdvancesContinuouslyBetweenRenderedFrames() {
+		assertEquals(1_001.0, SkyTimeMath.advanceClock(1_000.0, 5_000_000L, 200.0F, 1.0F), 1.0e-9);
+	}
+
+	@Test
 	void midnightUsesTheShortForwardRoute() {
 		assertEquals(2.0, SkyTimeMath.shortestDifference(23_999.0, 1.0), 1.0e-9);
 		assertEquals(-2.0, SkyTimeMath.shortestDifference(1.0, 23_999.0), 1.0e-9);

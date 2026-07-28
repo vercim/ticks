@@ -18,6 +18,12 @@ public final class SkyTimeMath {
 		return result < 0.0 ? result + modulus : result;
 	}
 
+	/** Advances a clock continuously using its server tick rate and clock multiplier. */
+	public static double advanceClock(double time, long elapsedNanos, float tickRate, float clockRate) {
+		double elapsedSeconds = Math.max(0L, elapsedNanos) / 1_000_000_000.0;
+		return time + elapsedSeconds * tickRate * clockRate;
+	}
+
 	/** Matches Minecraft's non-linear celestial-angle curve, but accepts fractional ticks. */
 	public static float skyAngle(double dayTime) {
 		double fraction = positiveModulo(dayTime / DAY_LENGTH - 0.25, 1.0);
