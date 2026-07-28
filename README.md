@@ -57,6 +57,14 @@ Use the root Gradle task to clean, test, and build every configured Stonecutter 
 
 Gradle applies both task names to every subproject, so this builds all versions and loaders declared in `settings.gradle.kts`; no per-target list is needed. Artifacts are written to `versions/<target>/build/libs/`. On Linux or macOS, use `./gradlew clean build`.
 
+To build every target and collect the distributable JARs in one folder, use:
+
+```powershell
+.\gradlew.bat buildAndCollect
+```
+
+The collected JARs are written to `build/libs/<mod version>/`. On Linux or macOS, use `./gradlew buildAndCollect`.
+
 ---
 
 > If you've found a bug or a version incompatibility, or if you have a suggestion, please [post it here](https://github.com/vercim/ticks/issues). Here is a [simple guide](https://youtu.be/CVqOHDpVwDc) on how to do that.
