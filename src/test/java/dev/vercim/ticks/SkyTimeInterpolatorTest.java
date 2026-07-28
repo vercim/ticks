@@ -14,7 +14,7 @@ class SkyTimeInterpolatorTest {
 		SkyTimeInterpolator interpolator = new SkyTimeInterpolator();
 		Object level = new Object();
 
-		interpolator.update(level, 1_234.5, 100L, TRANSITION_TIME_MILLIS);
+		interpolator.update(level, 1_234.5, 100L, TRANSITION_TIME_MILLIS, false);
 
 		assertTrue(interpolator.isTracking(level));
 		assertEquals(1_234.5, interpolator.getRenderedTime(), 1.0e-9);
@@ -24,9 +24,9 @@ class SkyTimeInterpolatorTest {
 	void ordinaryProgressUsesTheAuthoritativeTimeWithoutLag() {
 		SkyTimeInterpolator interpolator = new SkyTimeInterpolator();
 		Object level = new Object();
-		interpolator.update(level, 1_000.0, 0L, TRANSITION_TIME_MILLIS);
+		interpolator.update(level, 1_000.0, 0L, TRANSITION_TIME_MILLIS, false);
 
-		interpolator.update(level, 1_000.5, 25_000_000L, TRANSITION_TIME_MILLIS);
+		interpolator.update(level, 1_000.5, 25_000_000L, TRANSITION_TIME_MILLIS, false);
 
 		assertEquals(1_000.5, interpolator.getRenderedTime(), 1.0e-9);
 	}
@@ -35,13 +35,13 @@ class SkyTimeInterpolatorTest {
 	void timeJumpStartsFromThePreviousVisualTimeAndDecaysTowardTheTarget() {
 		SkyTimeInterpolator interpolator = new SkyTimeInterpolator();
 		Object level = new Object();
-		interpolator.update(level, 1_000.0, 0L, TRANSITION_TIME_MILLIS);
+		interpolator.update(level, 1_000.0, 0L, TRANSITION_TIME_MILLIS, false);
 		interpolator.markTimeJump(level);
 
-		interpolator.update(level, 7_000.0, 0L, TRANSITION_TIME_MILLIS);
+		interpolator.update(level, 7_000.0, 0L, TRANSITION_TIME_MILLIS, false);
 		assertEquals(1_000.0, interpolator.getRenderedTime(), 1.0e-9);
 
-		interpolator.update(level, 7_000.0, 200_000_000L, TRANSITION_TIME_MILLIS);
+		interpolator.update(level, 7_000.0, 200_000_000L, TRANSITION_TIME_MILLIS, false);
 		assertEquals(7_000.0 - 6_000.0 / Math.E, interpolator.getRenderedTime(), 1.0e-9);
 	}
 
@@ -49,10 +49,10 @@ class SkyTimeInterpolatorTest {
 	void midnightJumpUsesTheShortRouteAcrossTheDayBoundary() {
 		SkyTimeInterpolator interpolator = new SkyTimeInterpolator();
 		Object level = new Object();
-		interpolator.update(level, 23_999.0, 0L, TRANSITION_TIME_MILLIS);
+		interpolator.update(level, 23_999.0, 0L, TRANSITION_TIME_MILLIS, false);
 		interpolator.markTimeJump(level);
 
-		interpolator.update(level, 1.0, 0L, TRANSITION_TIME_MILLIS);
+		interpolator.update(level, 1.0, 0L, TRANSITION_TIME_MILLIS, false);
 
 		assertEquals(-1.0, interpolator.getRenderedTime(), 1.0e-9);
 	}
@@ -62,11 +62,11 @@ class SkyTimeInterpolatorTest {
 		SkyTimeInterpolator interpolator = new SkyTimeInterpolator();
 		Object firstLevel = new Object();
 		Object secondLevel = new Object();
-		interpolator.update(firstLevel, 1_000.0, 0L, TRANSITION_TIME_MILLIS);
+		interpolator.update(firstLevel, 1_000.0, 0L, TRANSITION_TIME_MILLIS, false);
 		interpolator.markTimeJump(firstLevel);
-		interpolator.update(firstLevel, 7_000.0, 0L, TRANSITION_TIME_MILLIS);
+		interpolator.update(firstLevel, 7_000.0, 0L, TRANSITION_TIME_MILLIS, false);
 
-		interpolator.update(secondLevel, 15_000.0, 1L, TRANSITION_TIME_MILLIS);
+		interpolator.update(secondLevel, 15_000.0, 1L, TRANSITION_TIME_MILLIS, false);
 
 		assertFalse(interpolator.isTracking(firstLevel));
 		assertTrue(interpolator.isTracking(secondLevel));
@@ -77,10 +77,10 @@ class SkyTimeInterpolatorTest {
 	void zeroTransitionTimeAppliesTimeJumpImmediately() {
 		SkyTimeInterpolator interpolator = new SkyTimeInterpolator();
 		Object level = new Object();
-		interpolator.update(level, 1_000.0, 0L, TRANSITION_TIME_MILLIS);
+		interpolator.update(level, 1_000.0, 0L, TRANSITION_TIME_MILLIS, false);
 		interpolator.markTimeJump(level);
 
-		interpolator.update(level, 7_000.0, 0L, 0);
+		interpolator.update(level, 7_000.0, 0L, 0, false);
 
 		assertEquals(7_000.0, interpolator.getRenderedTime(), 1.0e-9);
 	}
@@ -89,11 +89,28 @@ class SkyTimeInterpolatorTest {
 	void backwardsFrameClockDoesNotMoveTheTransitionBackward() {
 		SkyTimeInterpolator interpolator = new SkyTimeInterpolator();
 		Object level = new Object();
-		interpolator.update(level, 1_000.0, 100L, TRANSITION_TIME_MILLIS);
+		interpolator.update(level, 1_000.0, 100L, TRANSITION_TIME_MILLIS, false);
 		interpolator.markTimeJump(level);
 
-		interpolator.update(level, 7_000.0, 50L, TRANSITION_TIME_MILLIS);
+		interpolator.update(level, 7_000.0, 50L, TRANSITION_TIME_MILLIS, false);
 
 		assertEquals(1_000.0, interpolator.getRenderedTime(), 1.0e-9);
+	}
+
+	@Test
+	void pausedFramesDoNotAdvanceAnActiveTransition() {
+		SkyTimeInterpolator interpolator = new SkyTimeInterpolator();
+		Object level = new Object();
+		interpolator.update(level, 1_000.0, 0L, TRANSITION_TIME_MILLIS, false);
+		interpolator.markTimeJump(level);
+		interpolator.update(level, 7_000.0, 0L, TRANSITION_TIME_MILLIS, false);
+
+		interpolator.update(level, 7_000.0, 1_000_000_000L, TRANSITION_TIME_MILLIS, true);
+		interpolator.update(level, 7_000.0, 2_000_000_000L, TRANSITION_TIME_MILLIS, true);
+
+		assertEquals(1_000.0, interpolator.getRenderedTime(), 1.0e-9);
+
+		interpolator.update(level, 7_000.0, 2_200_000_000L, TRANSITION_TIME_MILLIS, false);
+		assertEquals(7_000.0 - 6_000.0 / Math.E, interpolator.getRenderedTime(), 1.0e-9);
 	}
 }

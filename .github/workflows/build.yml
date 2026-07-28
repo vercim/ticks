@@ -35,7 +35,7 @@ jobs:
           cache: gradle
 
       - name: Build all supported targets
-        run: ./gradlew buildAndCollect --no-daemon
+        run: ./gradlew build --no-daemon
 
       - name: Verify all supported target JARs
         shell: bash

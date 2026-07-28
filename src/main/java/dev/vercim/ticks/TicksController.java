@@ -42,8 +42,9 @@ public final class TicksController {
 		}
 
 		long now = System.nanoTime();
+		boolean paused = minecraft.isPaused();
 		//? >=26 {
-		/*double target = getContinuousClockTime(level, now);
+		/*double target = getContinuousClockTime(level, now, paused);
 		*///?}
 		//? <26 {
 		double target = level.getDayTime();
@@ -57,7 +58,7 @@ public final class TicksController {
 		//?}
 		//?}
 
-		INTERPOLATOR.update(level, target, now, TicksConfig.getTransitionTimeMillis());
+		INTERPOLATOR.update(level, target, now, TicksConfig.getTransitionTimeMillis(), paused);
 		trackedLevel = level;
 		renderedSkyAngle = SkyTimeMath.skyAngle(INTERPOLATOR.getRenderedTime());
 	}
@@ -78,7 +79,7 @@ public final class TicksController {
 		clockFrameBaseNanos = now;
 			clockVelocity = 0.0F;
 		} else {
-			double continuousTime = getContinuousClockTime(level, now);
+			double continuousTime = getContinuousClockTime(level, now, false);
 			double expectedAdvance = (gameTime - clockServerGameTime) * dayTimeRate;
 			double authoritativeAdvance = authoritativeTime - clockAuthoritativeTime;
 			boolean timeJump = Math.abs(authoritativeAdvance - expectedAdvance) > 0.01;
@@ -133,12 +134,12 @@ public final class TicksController {
 	}
 
 	//? >=26 {
-	/*private static double getContinuousClockTime(ClientLevel level, long now) {
+	/*private static double getContinuousClockTime(ClientLevel level, long now, boolean paused) {
 		if (!clockSynchronized || clockLevel != level) {
 			return level.getOverworldClockTime();
 		}
 
-		float desiredVelocity = level.tickRateManager().runsNormally()
+		float desiredVelocity = !paused && level.tickRateManager().runsNormally()
 				? level.tickRateManager().tickrate() * dayTimeRate
 				: 0.0F;
 		double currentTime = SkyTimeMath.advanceClock(
