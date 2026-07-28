@@ -6,3 +6,4 @@ run/
 *.class
 .idea/
 *.iml
+.vscode/

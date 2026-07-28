@@ -13,6 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(GameRenderer.class)
 abstract class GameRendererMixin {
 	//? >=1.21.1 {
+	//? <1.21.11 {
 	/*@Inject(method = "render", at = @At("HEAD"))
 	private void ticks$beginFrame(DeltaTracker deltaTracker, boolean tick, CallbackInfo callbackInfo) {
 		TicksController.beginFrame(deltaTracker.getGameTimeDeltaPartialTick(false));
@@ -23,6 +24,7 @@ abstract class GameRendererMixin {
 		TicksController.endFrame();
 	}
 	*///?}
+	//?}
 	//? <1.21.1 {
 	@Inject(method = "render", at = @At("HEAD"))
 	private void ticks$beginFrame(float partialTick, long nanoTime, boolean tick, CallbackInfo callbackInfo) {

@@ -71,6 +71,9 @@ tasks.processResources {
 	filesMatching("fabric.mod.json") {
 		expand(metadata)
 	}
+	filesMatching("ticks.mixins.json") {
+		expand("sky_renderer_mixin" to if (minecraftVersion == "1.21.11") ",\n    \"SkyRendererMixin\"" else "")
+	}
 }
 
 tasks.withType<JavaCompile>().configureEach {

@@ -9,6 +9,7 @@ val minecraftVersion = stonecutter.current.version.substringBeforeLast('-')
 val neoForgeVersion = when (minecraftVersion) {
 	"1.21.1" -> project.property("neoforge_version") as String
 	"1.21.4" -> project.property("neoforge_1_21_4_version") as String
+	"1.21.11" -> project.property("neoforge_1_21_11_version") as String
 	else -> error("No NeoForge version is configured for Minecraft $minecraftVersion")
 }
 val minecraftVersionUpperBound = minecraftVersion.split(".").let { parts ->
@@ -77,6 +78,9 @@ tasks.processResources {
 	inputs.properties(metadata)
 	filesMatching("META-INF/neoforge.mods.toml") {
 		expand(metadata)
+	}
+	filesMatching("ticks.mixins.json") {
+		expand("sky_renderer_mixin" to if (minecraftVersion == "1.21.11") ",\n    \"SkyRendererMixin\"" else "")
 	}
 }
 
