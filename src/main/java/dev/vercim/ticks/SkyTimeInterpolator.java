@@ -9,7 +9,7 @@ final class SkyTimeInterpolator {
 	private double offset;
 	private long lastFrameNanos;
 
-	void update(Object level, double target, long nowNanos, int transitionTimeMillis) {
+	void update(Object level, double target, long nowNanos, int transitionTimeMillis, boolean paused) {
 		if (!initialized || trackedLevel != level) {
 			trackedLevel = level;
 			initialized = true;
@@ -25,7 +25,9 @@ final class SkyTimeInterpolator {
 			pendingJump = false;
 		}
 
-		double elapsedSeconds = Math.max(0.0, (nowNanos - lastFrameNanos) / 1_000_000_000.0);
+		double elapsedSeconds = paused
+				? 0.0
+				: Math.max(0.0, (nowNanos - lastFrameNanos) / 1_000_000_000.0);
 		lastFrameNanos = nowNanos;
 		double transitionTimeSeconds = transitionTimeMillis / 1_000.0;
 		if (transitionTimeSeconds == 0.0) {
