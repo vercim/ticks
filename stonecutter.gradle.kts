@@ -5,14 +5,21 @@ plugins {
 	id("net.fabricmc.fabric-loom-remap") version "1.16.3" apply false
 }
 
-stonecutter active file(".sc_active_version")
+val activeVersionFile = file(".sc_active_version")
+if (activeVersionFile.isFile) {
+	stonecutter active activeVersionFile
+} else {
+	stonecutter active "1.21.1-fabric"
+}
 
 stonecutter parameters {
 	constants.match(current.project.substringAfterLast('-'), "fabric", "forge", "neoforge")
 }
 
-tasks.register("runActiveClient") {
-	group = "stonecutter"
-	description = "Runs the client for the active Stonecutter target."
-	dependsOn(stonecutter.current!!.project + ":runClient")
+if (activeVersionFile.isFile) {
+	tasks.register("runActiveClient") {
+		group = "stonecutter"
+		description = "Runs the client for the active Stonecutter target."
+		dependsOn(stonecutter.current!!.project + ":runClient")
+	}
 }
