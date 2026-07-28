@@ -12,6 +12,14 @@
    .\gradlew.bat clean build
    ```
 
+   To collect the six distributable JARs for local inspection, run this afterwards:
+
+   ```powershell
+   .\gradlew.bat buildAndCollect
+   ```
+
+   The collected files are in `build/libs/<mod version>/`. The release workflow continues to publish the per-target JARs from `versions/<target>/build/libs/`.
+
 3. Commit and push the release:
 
    ```powershell
