@@ -90,6 +90,14 @@ tasks.test {
 	useJUnitPlatform()
 }
 
+tasks.register<Copy>("buildAndCollect") {
+	group = "build"
+	description = "Builds this target and copies its distributable JAR to the root collection directory."
+	from(tasks.named<org.gradle.api.tasks.bundling.Jar>("jar").flatMap { it.archiveFile })
+	into(rootProject.layout.buildDirectory.dir("libs/${project.property("mod_version")}"))
+	dependsOn("build")
+}
+
 publishMods {
 	file.set(tasks.named<org.gradle.api.tasks.bundling.Jar>("jar").flatMap { it.archiveFile })
 	displayName.set("$displayVersion+$minecraftVersion")
