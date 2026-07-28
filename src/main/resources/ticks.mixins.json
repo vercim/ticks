@@ -9,6 +9,6 @@
   "client": [
     "ClientLevelMixin",
     "DimensionTypeMixin",
-    "GameRendererMixin"
+    "GameRendererMixin"${sky_renderer_mixin}
   ]
 }

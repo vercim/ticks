@@ -76,6 +76,9 @@ tasks.processResources {
 	filesMatching("META-INF/mods.toml") {
 		expand(metadata)
 	}
+	filesMatching("ticks.mixins.json") {
+		expand("sky_renderer_mixin" to "")
+	}
 }
 
 tasks.withType<JavaCompile>().configureEach {
