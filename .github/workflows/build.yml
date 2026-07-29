@@ -4,9 +4,31 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'src/**'
+      - 'gradle/**'
+      - 'gradlew'
+      - 'gradlew.bat'
+      - 'gradle.properties'
+      - 'settings.gradle.kts'
+      - 'stonecutter.gradle.kts'
+      - 'build.*.gradle.kts'
+      - '.github/workflows/build.yml'
+      - '.github/workflows/release.yml'
   pull_request:
     branches:
       - main
+    paths:
+      - 'src/**'
+      - 'gradle/**'
+      - 'gradlew'
+      - 'gradlew.bat'
+      - 'gradle.properties'
+      - 'settings.gradle.kts'
+      - 'stonecutter.gradle.kts'
+      - 'build.*.gradle.kts'
+      - '.github/workflows/build.yml'
+      - '.github/workflows/release.yml'
 
 permissions:
   contents: read

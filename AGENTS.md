@@ -11,11 +11,14 @@ Stonecutter generates loader-specific projects under `versions/`. Treat that dir
 Use the checked-in Gradle wrapper. On Windows:
 
 - `.\gradlew.bat clean build` — clean, test, and package every Stonecutter target.
+- `.\gradlew.bat buildAndCollect` — build every target and collect its distributable JARs in `build/libs/<mod version>/`.
 - `.\gradlew.bat :1.21.1-fabric:test` — run only one target's JUnit suite when narrowing a failure.
 - `.\gradlew.bat runActiveClient` — launch the target selected by `.sc_active_version`.
 - `.\gradlew.bat :1.21.1-fabric:runClient` — launch a specific development client.
 
-Unqualified task names such as `clean`, `build`, and `publishMods` are selected across every Gradle subproject, so do not maintain explicit target lists. Use `./gradlew` in Unix-like shells. Built artifacts appear in `versions/<target>/build/libs/`.
+Unqualified task names such as `clean`, `build`, `buildAndCollect`, and `publishMods` are selected across every Gradle subproject, so do not maintain explicit target lists. Use `./gradlew` in Unix-like shells. Built artifacts appear in `versions/<target>/build/libs/`.
+
+The `Build` workflow runs `build` for all targets on pushes and pull requests to `main` only when build-related files change: `src/**`, Gradle configuration and wrapper files, or a build/release workflow. Documentation-only changes do not trigger it.
 
 ## Coding Style & Naming Conventions
 
@@ -33,7 +36,7 @@ History is currently minimal; follow its imperative, title-case style (for examp
 
 Pushing a tag matching `v*` starts [`.github/workflows/release.yml`](.github/workflows/release.yml). `mod_version` in `gradle.properties` is the release source of truth: the tag must be exactly `v<mod_version>`. Use `-alpha` or `-beta` in `mod_version` for prereleases; the workflow assigns the same Alpha or Beta channel to GitHub Releases, CurseForge, and Modrinth. A version without either suffix is a stable release.
 
-The workflow runs the root `clean build` and `publishMods` task selectors. Gradle applies them to all supported Stonecutter subprojects, so adding a target in `settings.gradle.kts` automatically includes it in CI builds and publishing.
+The release workflow runs the root `clean buildAndCollect` and `publishMods` task selectors. Gradle applies them to all supported Stonecutter subprojects, so adding a target in `settings.gradle.kts` automatically includes it in release builds and publishing.
 
 Repository configuration is required before publishing:
 
