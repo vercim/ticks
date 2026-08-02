@@ -39,34 +39,8 @@ The project uses [Stonecutter](https://stonecutter.kikugie.dev/) to create fourt
 
 Each target selects its build script: Fabric uses Fabric Loom (with Loom Back Compat for 1.20.1), Forge uses NeoForge ModDev LegacyForge, and NeoForge uses NeoForge ModDev. Stonecutter conditional compilation in the shared sources handles API differences between Minecraft versions, such as the `GameRenderer#render` signature.
 
-## Requirements
-
-No additional mod dependencies; Fabric API is not required
-
 ## Configuration
 
 Ticks works automatically and creates `config/ticks.json` with the default transition duration. Edit `transitionTimeMillis` there while the game is closed; it is client-side only and does not need to be installed on a server.
-
-## Build
-
-Use the root Gradle task to clean, test, and build every configured Stonecutter target:
-
-```powershell
-.\gradlew.bat clean build
-```
-
-Gradle applies both task names to every subproject, so this builds all versions and loaders declared in `settings.gradle.kts`; no per-target list is needed. Artifacts are written to `versions/<target>/build/libs/`. On Linux or macOS, use `./gradlew clean build`.
-
-The GitHub Actions build workflow runs this build without `clean` whenever build-related sources, resources, Gradle configuration, or a build/release workflow changes. Documentation-only changes do not start a build.
-
-To build every target and collect the distributable JARs in one folder, use:
-
-```powershell
-.\gradlew.bat buildAndCollect
-```
-
-The collected JARs are written to `build/libs/<mod version>/`. On Linux or macOS, use `./gradlew buildAndCollect`.
-
----
 
 > If you've found a bug or a version incompatibility, or if you have a suggestion, please [post it here](https://github.com/vercim/ticks/issues). Here is a [simple guide](https://youtu.be/CVqOHDpVwDc) on how to do that.
