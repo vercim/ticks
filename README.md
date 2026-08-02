@@ -21,8 +21,6 @@ dev/vercim/ticks/
 
 `TicksController` combines world time with the current partial tick. The Mixins restrict the override to sky rendering, so the authoritative world time and game simulation remain unchanged.
 
-## File name format
-
 Released JARs follow this pattern:
 
 ```text
@@ -33,7 +31,7 @@ ticks-0.1.0+1.21.1-fabric.jar
       └─ Mod version
 ```
 
-## Multi-loader and multi-version setup
+## Stonecutter
 
 The project uses [Stonecutter](https://stonecutter.kikugie.dev/) to create fourteen Gradle targets from one source tree.
 
