@@ -1,8 +1,10 @@
 ## What does it do?
-It affects sky rendering only; world time, server synchronization, and game logic are unchanged. Dedicated-server installation is unnecessary.
+Ticks is a simple client-side mod that renders the skybox moving at the frame rate instead of game tick rate.
+It affects sky rendering only; world time, server synchronization, and game logic are unchanged.
+Not recommended for use with shaders!
 
 ## Configuration
-Ticks works automatically and creates `config/ticks.json` with the default transition duration. Edit `transitionTimeMillis` there while the game is closed; it is client-side only and does not need to be installed on a server.
+Ticks works automatically and creates `config/ticks.json` with the default transition duration. Edit `transitionTimeMillis` there while the game is closed.
 
 ##
 If you've found a bug or a version incompatibility, or if you have a suggestion, please [post it here](https://github.com/vercim/ticks/issues). Here is a [simple guide](https://youtu.be/CVqOHDpVwDc) on how to do that.
