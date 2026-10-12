@@ -1,11 +1,12 @@
 .gradle/
 build/
-versions/
-run/
-.sc_active_version
-*.class
 .idea/
-*.iml
 .vscode/
-AGENTS.md
-CLAUDE.md
+*.iml
+*.class
+out/
+run/
+.run/
+
+# Stonecutter target projects and their output are generated; Ticks has no per-version source overrides.
+versions/

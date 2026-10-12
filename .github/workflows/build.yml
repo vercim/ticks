@@ -5,36 +5,32 @@ on:
     branches:
       - main
     paths:
+      - '.github/workflows/build.yml'
       - 'src/**'
+      - 'build.*.gradle.kts'
+      - 'settings.gradle.kts'
+      - 'stonecutter.gradle.kts'
+      - 'gradle.properties'
       - 'gradle/**'
       - 'gradlew'
       - 'gradlew.bat'
-      - 'gradle.properties'
-      - 'settings.gradle.kts'
-      - 'stonecutter.gradle.kts'
-      - 'build.*.gradle.kts'
-      - '.github/workflows/build.yml'
-      - '.github/workflows/release.yml'
   pull_request:
-    branches:
-      - main
     paths:
+      - '.github/workflows/build.yml'
       - 'src/**'
+      - 'build.*.gradle.kts'
+      - 'settings.gradle.kts'
+      - 'stonecutter.gradle.kts'
+      - 'gradle.properties'
       - 'gradle/**'
       - 'gradlew'
       - 'gradlew.bat'
-      - 'gradle.properties'
-      - 'settings.gradle.kts'
-      - 'stonecutter.gradle.kts'
-      - 'build.*.gradle.kts'
-      - '.github/workflows/build.yml'
-      - '.github/workflows/release.yml'
 
 permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: build-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -43,27 +39,33 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out the repository
-        uses: actions/checkout@v4
+      - name: Check out repository
+        uses: actions/checkout@v7
 
-      - name: Make Gradle wrapper executable
-        run: chmod +x gradlew
-
-      - name: Set up JDK 25
-        uses: actions/setup-java@v4
+      # Gradle itself needs JDK 25 (Fabric Loom 1.18); the last version listed becomes JAVA_HOME.
+      # JDK 17 (1.20.1), 21 (1.21.x) and 25 (26.x) are the toolchains the mod compiles with.
+      - name: Set up JDK 17, 21 and 25
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
-          java-version: '25'
-          cache: gradle
+          java-version: |
+            17
+            21
+            25
 
-      - name: Build all supported targets
-        run: ./gradlew build --no-daemon
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
 
-      - name: Verify all supported target JARs
+      - name: Build and test all Stonecutter targets
+        run: |
+          chmod +x gradlew
+          ./gradlew build --no-daemon
+
+      - name: Verify artifacts
         shell: bash
         run: |
           mapfile -t target_dirs < <(find versions -mindepth 1 -maxdepth 1 -type d | sort)
-          test "${#target_dirs[@]}" -gt 0 || { echo "No Stonecutter targets were found."; exit 1; }
+          test "${#target_dirs[@]}" -gt 0 || { echo "::error::No Stonecutter targets were found"; exit 1; }
 
           for target_dir in "${target_dirs[@]}"; do
             mapfile -t artifacts < <(
@@ -71,7 +73,7 @@ jobs:
                 ! -name '*-sources.jar' ! -name '*-dev.jar' 2>/dev/null | sort
             )
             test "${#artifacts[@]}" -eq 1 || {
-              echo "Expected exactly one release JAR in $target_dir/build/libs, found ${#artifacts[@]}."
+              echo "::error::Expected exactly one release JAR in $target_dir/build/libs, found ${#artifacts[@]}"
               printf '  %s\n' "${artifacts[@]}"
               exit 1
             }
