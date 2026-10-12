@@ -5,7 +5,8 @@
 - A lagging server no longer makes the sky run ahead and jump back between time updates; sudden corrections are blended instead.
 
 ### Compatibility
-- Updated development and minimum dependencies: Fabric Loader 0.19.5, Forge 47.4.26 (1.20.1), and NeoForge 21.1.259 (1.21.1), 21.4.158 (1.21.4), 21.11.45 (1.21.11), 26.1.2.116 (26.1.2), 26.2.0.90 (26.2).
+- Added Minecraft 26.3 support for Fabric and NeoForge.
+- Updated development and minimum dependencies: Fabric Loader 0.19.5, Forge 47.4.26 (1.20.1), and NeoForge 21.1.259 (1.21.1), 21.4.158 (1.21.4), 21.11.45 (1.21.11), 26.1.2.116 (26.1.2), 26.2.0.90 (26.2), 26.3.0.76 (26.3).
 
 ### Architecture
 - The visual time is now estimated on every version from the server's time packets and the measured tick rate, instead of the nominal tick rate (26.x) or the client's own tick counter (older versions).

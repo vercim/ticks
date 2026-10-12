@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Ticks — client-side Minecraft mod that renders the sky (sun, moon, stars) at the frame rate instead of the game tick rate. Fabric + Forge + NeoForge, one shared source tree built with Stonecutter for 14 targets (Minecraft 1.20.1 – 26.2), Mojang mappings.
+Ticks — client-side Minecraft mod that renders the sky (sun, moon, stars) at the frame rate instead of the game tick rate. Fabric + Forge + NeoForge, one shared source tree built with Stonecutter for 16 targets (Minecraft 1.20.1 – 26.3), Mojang mappings.
 
 `AGENTS.md` is a symlink to this file.
 
@@ -15,7 +15,7 @@ Ticks — client-side Minecraft mod that renders the sky (sun, moon, stars) at t
 ## Current state
 
 - Version `1.0.1` (earlier: `1.0.0-beta`, `0.1.2-alpha`).
-- Targets (declared once in `settings.gradle.kts`): `1.20.1-fabric`, `1.20.1-forge`, and `-fabric` / `-neoforge` for `1.21.1`, `1.21.4`, `1.21.11`, `26.1`, `26.1.2`, `26.2`. Per-target details: [docs/VERSION_NOTES.md](docs/VERSION_NOTES.md). Never add long-lived version branches.
+- Targets (declared once in `settings.gradle.kts`): `1.20.1-fabric`, `1.20.1-forge`, and `-fabric` / `-neoforge` for `1.21.1`, `1.21.4`, `1.21.11`, `26.1`, `26.1.2`, `26.2`, `26.3`. Per-target details: [docs/VERSION_NOTES.md](docs/VERSION_NOTES.md). Never add long-lived version branches.
 - `vcsVersion = 1.21.1-fabric`: commit with `.sc_active_version` set to `1.21.1-fabric`.
 - README texts and images are shared with the Modrinth and CurseForge pages; keep README edits minimal and user-facing.
 
@@ -89,7 +89,7 @@ Tabs for indentation, braces on the same line, grouped imports, `final` utility 
 
 ## Testing
 
-JUnit Jupiter 5 runs per target as part of `build` (CI runs all 14). Name test files `*Test.java` and methods after observable behavior (for example `midnightUsesTheShortForwardRoute`). Add deterministic unit tests for interpolation, wrapping, and discontinuities; run one target with `:1.21.1-fabric:test` while narrowing a failure. Mixins and rendering cannot be unit-tested: use the packaged-JAR checklist in [docs/WORKFLOW.md](docs/WORKFLOW.md#packaged-jar-validation).
+JUnit Jupiter 5 runs per target as part of `build` (CI runs all 16). Name test files `*Test.java` and methods after observable behavior (for example `midnightUsesTheShortForwardRoute`). Add deterministic unit tests for interpolation, wrapping, and discontinuities; run one target with `:1.21.1-fabric:test` while narrowing a failure. Mixins and rendering cannot be unit-tested: use the packaged-JAR checklist in [docs/WORKFLOW.md](docs/WORKFLOW.md#packaged-jar-validation).
 
 ## Changelog
 
