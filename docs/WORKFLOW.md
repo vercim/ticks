@@ -20,7 +20,7 @@ The matrix is declared once in [`settings.gradle.kts`](../settings.gradle.kts); 
 ## Requirements
 
 - JDK 25+ to launch Gradle (Fabric Loom 1.18 refuses to load on anything older). The Java 17, 21, and 25 toolchains that compile the targets are provisioned automatically (Foojay resolver); CI installs all three explicitly.
-- Windows: PowerShell, use `.\gradlew.bat`.
+- Windows: PowerShell, use `.\gradlew.bat`. Always pass `-Path` and `-Value` by name to `Set-Content`: in Windows PowerShell 5.1 the positional form swaps them and creates a junk file named after the target.
 - macOS / Linux: use `./gradlew` (run `chmod +x gradlew` if it is not executable).
 - To force a specific launcher JDK: macOS `export JAVA_HOME=$(/usr/libexec/java_home -v 25)`, Windows `$env:JAVA_HOME = "C:\path\to\jdk-25"`.
 
@@ -29,7 +29,7 @@ The matrix is declared once in [`settings.gradle.kts`](../settings.gradle.kts); 
 Windows (PowerShell):
 
 ```powershell
-Set-Content -NoNewline .sc_active_version "1.21.1-fabric"   # any target name from the matrix
+Set-Content -NoNewline -Path .sc_active_version -Value "1.21.1-fabric"   # any target name from the matrix
 .\gradlew.bat runActiveClient
 .\gradlew.bat buildActive
 .\gradlew.bat build
