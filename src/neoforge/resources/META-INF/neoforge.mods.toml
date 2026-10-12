@@ -9,8 +9,7 @@ version="${version}"
 displayName="${mod_name}"
 displayURL="${mod_homepage}"
 description='''${mod_description}'''
-logoFile="assets/ticks/icon.png"
-logoBlur=false
+${mod_icon}
 authors="${mod_authors}"
 
 [[mixins]]

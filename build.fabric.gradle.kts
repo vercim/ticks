@@ -15,7 +15,7 @@ val javaVersion = when {
 val fabricLoaderVersion = if (isLegacy) "0.15.11" else project.property("fabric_loader_version") as String
 val fabricLoaderMinVersion = when {
 	isLegacy -> "0.14.21"
-	minecraftVersion == "26.2" -> project.property("fabric_loader_26_2_min_version") as String
+	minecraftVersion == "26.2" || minecraftVersion == "26.3" -> project.property("fabric_loader_26_2_min_version") as String
 	else -> project.property("fabric_loader_min_version") as String
 }
 val releaseType = providers.gradleProperty("release_type").orElse("release").get()

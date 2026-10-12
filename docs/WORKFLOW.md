@@ -12,15 +12,15 @@ Ticks uses one [Stonecutter](https://stonecutter.kikugie.dev/) repository: a sin
 | `1.20.1-forge` | Forge | 17 |
 | `1.21.1-fabric`, `1.21.4-fabric`, `1.21.11-fabric` | Fabric | 21 |
 | `1.21.1-neoforge`, `1.21.4-neoforge`, `1.21.11-neoforge` | NeoForge | 21 |
-| `26.1-fabric`, `26.1.2-fabric`, `26.2-fabric` | Fabric | 25 |
-| `26.1-neoforge`, `26.1.2-neoforge`, `26.2-neoforge` | NeoForge | 25 |
+| `26.1-fabric`, `26.1.2-fabric`, `26.2-fabric`, `26.3-fabric` | Fabric | 25 |
+| `26.1-neoforge`, `26.1.2-neoforge`, `26.2-neoforge`, `26.3-neoforge` | NeoForge | 25 |
 
 The matrix is declared once in [`settings.gradle.kts`](../settings.gradle.kts); the Java version of each target is chosen in its loader build script. The active target for the convenience tasks is stored in `.sc_active_version`. Dependency versions per target: [VERSION_NOTES.md](VERSION_NOTES.md).
 
 ## Requirements
 
 - JDK 25+ to launch Gradle (Fabric Loom 1.18 refuses to load on anything older). The Java 17, 21, and 25 toolchains that compile the targets are provisioned automatically (Foojay resolver); CI installs all three explicitly.
-- Windows: PowerShell, use `.\gradlew.bat`.
+- Windows: PowerShell, use `.\gradlew.bat`. Always pass `-Path` and `-Value` by name to `Set-Content`: in Windows PowerShell 5.1 the positional form swaps them and creates a junk file named after the target.
 - macOS / Linux: use `./gradlew` (run `chmod +x gradlew` if it is not executable).
 - To force a specific launcher JDK: macOS `export JAVA_HOME=$(/usr/libexec/java_home -v 25)`, Windows `$env:JAVA_HOME = "C:\path\to\jdk-25"`.
 
@@ -29,7 +29,7 @@ The matrix is declared once in [`settings.gradle.kts`](../settings.gradle.kts); 
 Windows (PowerShell):
 
 ```powershell
-Set-Content -NoNewline .sc_active_version "1.21.1-fabric"   # any target name from the matrix
+Set-Content -NoNewline -Path .sc_active_version -Value "1.21.1-fabric"   # any target name from the matrix
 .\gradlew.bat runActiveClient
 .\gradlew.bat buildActive
 .\gradlew.bat build
@@ -67,8 +67,6 @@ Unqualified task names are run by Gradle in every target project, so there is no
 Do not use `clean` routinely: it discards Gradle and Minecraft preparation work.
 
 Outputs: collected release JARs are in `build/libs/<mod_version>/` (for example `ticks-1.0.0-beta+1.21.1-fabric.jar`); per-target output is in `versions/<target>/build/libs/` (`-sources` JARs are not published).
-
-Commit with `1.21.1-fabric` active (the configured `vcsVersion`).
 
 ## Conditional sources
 
@@ -139,7 +137,7 @@ Use a clean client profile each time, and record the outcome in the target's `Ve
    - stable: `1.2.3`
    - beta: `1.2.3-beta` (or `1.2.3-beta.1`)
    - alpha: `1.2.3-alpha` (or `1.2.3-alpha.1`)
-2. Run `clean buildAndCollect` (commands above for your OS); the fourteen JARs are collected in `build/libs/<mod_version>/`.
+2. Run `clean buildAndCollect` (commands above for your OS); the sixteen JARs are collected in `build/libs/<mod_version>/`.
 3. Validate the packaged JARs (see above).
 4. Commit and push the release to `main`, then create and push the matching `v<mod_version>` tag:
 
