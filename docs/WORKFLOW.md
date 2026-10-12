@@ -12,8 +12,8 @@ Ticks uses one [Stonecutter](https://stonecutter.kikugie.dev/) repository: a sin
 | `1.20.1-forge` | Forge | 17 |
 | `1.21.1-fabric`, `1.21.4-fabric`, `1.21.11-fabric` | Fabric | 21 |
 | `1.21.1-neoforge`, `1.21.4-neoforge`, `1.21.11-neoforge` | NeoForge | 21 |
-| `26.1-fabric`, `26.1.2-fabric`, `26.2-fabric` | Fabric | 25 |
-| `26.1-neoforge`, `26.1.2-neoforge`, `26.2-neoforge` | NeoForge | 25 |
+| `26.1-fabric`, `26.1.2-fabric`, `26.2-fabric`, `26.3-fabric` | Fabric | 25 |
+| `26.1-neoforge`, `26.1.2-neoforge`, `26.2-neoforge`, `26.3-neoforge` | NeoForge | 25 |
 
 The matrix is declared once in [`settings.gradle.kts`](../settings.gradle.kts); the Java version of each target is chosen in its loader build script. The active target for the convenience tasks is stored in `.sc_active_version`. Dependency versions per target: [VERSION_NOTES.md](VERSION_NOTES.md).
 
@@ -139,7 +139,7 @@ Use a clean client profile each time, and record the outcome in the target's `Ve
    - stable: `1.2.3`
    - beta: `1.2.3-beta` (or `1.2.3-beta.1`)
    - alpha: `1.2.3-alpha` (or `1.2.3-alpha.1`)
-2. Run `clean buildAndCollect` (commands above for your OS); the fourteen JARs are collected in `build/libs/<mod_version>/`.
+2. Run `clean buildAndCollect` (commands above for your OS); the sixteen JARs are collected in `build/libs/<mod_version>/`.
 3. Validate the packaged JARs (see above).
 4. Commit and push the release to `main`, then create and push the matching `v<mod_version>` tag:
 

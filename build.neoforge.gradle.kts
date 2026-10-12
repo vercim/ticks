@@ -13,6 +13,7 @@ val neoForgeVersion = when (minecraftVersion) {
 	"26.1" -> project.property("neoforge_26_1_version") as String
 	"26.1.2" -> project.property("neoforge_26_1_2_version") as String
 	"26.2" -> project.property("neoforge_26_2_version") as String
+	"26.3" -> project.property("neoforge_26_3_version") as String
 	else -> error("No NeoForge version is configured for Minecraft $minecraftVersion")
 }
 val minecraftVersionUpperBound = minecraftVersion.split(".").toMutableList().let { parts ->

@@ -36,6 +36,7 @@ Values come from `gradle.properties` and the loader build scripts; copy, do not 
 | 26.1 | 25 | same | `neoforge_26_1_version=26.1.0.19-beta` |
 | 26.1.2 | 25 | same | `neoforge_26_1_2_version=26.1.2.116` |
 | 26.2 | 25 | `fabric_loader_version` / `fabric_loader_26_2_min_version=0.19.0` | `neoforge_26_2_version=26.2.0.90` |
+| 26.3 | 25 | same as 26.2 (`fabric_loader_26_2_min_version`) | `neoforge_26_3_version=26.3.0.76` |
 
 Current common values: `fabric_loader_version=0.19.5`, `fabric_loader_min_version=0.16.10`, `neoforge_loader_version_range=[4,)`. Ticks has no mod dependencies beyond the loader.
 
@@ -83,10 +84,11 @@ Likely trouble spots, in order: the frame/sky hook, the time-update hook, then m
 
 ### MC 26.x — Fabric / NeoForge
 
-Targets: `26.1`, `26.1.2`, `26.2` (each `-fabric` and `-neoforge`) · first tagged version: 1.0.0-beta · date: 2026-07-29
+Targets: `26.1`, `26.1.2`, `26.2`, `26.3` (each `-fabric` and `-neoforge`) · first tagged version: 1.0.0-beta (`26.3`: 1.0.1) · date: 2026-07-29 (`26.3`: 2026-10-12)
 
 - Java 25; unobfuscated Minecraft (no remapping, `isUnobfuscated` in `build.fabric.gradle.kts`).
-- 26.2 needs Fabric Loader `>=0.19.0` (`fabric_loader_26_2_min_version`).
+- 26.2 and 26.3 need Fabric Loader `>=0.19.0` (`fabric_loader_26_2_min_version`, shared by both in `build.fabric.gradle.kts`).
+- 26.3 needed no source changes: the 26.2 hooks (`SkyRenderer.extractRenderState`, `ClientClockManager.handleUpdates`, `SkyRenderState` angles) have identical signatures, and the Fabric dev client runs with all five mixins applied. NeoForge `26.3.0.76` is a stable build.
 - `26.1` uses a NeoForge beta (`26.1.0.19-beta`); revisit when a stable build appears.
 - World time comes from the overworld clock, not `getDayTime()`. The server sends the clock state only when it changes (`/time set`, rate, pause, join); the periodic sync every 20 ticks has an empty clock map and carries the game time only, so the day time between clock updates is `clock time + (gameTime - clock gameTime) * rate`. `ServerTimeEstimator` derives it that way and measures the real tick rate from those periodic game times.
 - Verified: in-game validation not recorded (see WORKFLOW.md → Packaged-JAR validation).
