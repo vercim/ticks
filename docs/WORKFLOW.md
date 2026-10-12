@@ -118,7 +118,7 @@ IDE runs are not enough for loader or Mixin changes. Before releasing (and after
 - launch at least one JAR per loader and per Minecraft *generation* (`1.20.1`, `1.21.1`/`1.21.4`, `1.21.11`, `26.x`) in a clean client profile, since the hooks differ per generation;
 - verify `config/ticks.json` is created with `transitionTimeMillis` and that changing it takes effect after a restart;
 - watch the sun/moon at high FPS: motion must be smooth between ticks, `/time set` and `/time add` must blend instead of snapping or spinning the wrong way, and the sky must not drift while the game is paused;
-- on `26.x` also test `/tick freeze` and `/tick rate`, which the world-clock extrapolation depends on;
+- on every version with `/tick` (1.21.1 and newer) test `/tick freeze` and `/tick rate`: the sky must stop on freeze, speed up within a second at `/tick rate 100`, and at a rate the machine cannot sustain (for example `/tick rate 10000`) keep pace with the daytime the world really reaches (compare with `/time query daytime`) instead of racing ahead; a lagging server must not make the sky run ahead and jump back;
 - confirm nothing changes in the Nether and the End (fixed-time dimensions) and that world time and server behavior are unaffected.
 
 Use a clean client profile each time, and record the outcome in the target's `Verified` line in [VERSION_NOTES.md](VERSION_NOTES.md). Shaders are not supported.
