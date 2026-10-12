@@ -16,7 +16,6 @@ Ticks — client-side Minecraft mod that renders the sky (sun, moon, stars) at t
 
 - Version `1.0.1` (earlier: `1.0.0-beta`, `0.1.2-alpha`).
 - Targets (declared once in `settings.gradle.kts`): `1.20.1-fabric`, `1.20.1-forge`, and `-fabric` / `-neoforge` for `1.21.1`, `1.21.4`, `1.21.11`, `26.1`, `26.1.2`, `26.2`, `26.3`. Per-target details: [docs/VERSION_NOTES.md](docs/VERSION_NOTES.md). Never add long-lived version branches.
-- `vcsVersion = 1.21.1-fabric`: commit with `.sc_active_version` set to `1.21.1-fabric`.
 - README texts and images are shared with the Modrinth and CurseForge pages; keep README edits minimal and user-facing.
 
 ## Rules that must not be forgotten
