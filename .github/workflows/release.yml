@@ -4,7 +4,7 @@ run-name: Release ${{ github.ref_name }}
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 permissions:
   contents: write
@@ -15,66 +15,63 @@ concurrency:
 
 jobs:
   publish:
-    name: Build and publish
+    name: Build and publish all supported targets
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out the release tag
-        uses: actions/checkout@v4
+      - name: Check out release tag
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       - name: Make Gradle wrapper executable
         run: chmod +x gradlew
 
-      - name: Set up JDK 25
-        uses: actions/setup-java@v4
+      # Gradle itself needs JDK 25 (Fabric Loom 1.18); the last version listed becomes JAVA_HOME.
+      # JDK 17 (1.20.1), 21 (1.21.x) and 25 (26.x) are the toolchains the mod compiles with.
+      - name: Set up JDK 17, 21 and 25
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
-          java-version: '25'
-          cache: gradle
+          java-version: |
+            17
+            21
+            25
 
-      - name: Verify the release tag
-        id: release_metadata
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Validate release metadata
+        id: release
+        shell: bash
         run: |
           version="$(grep '^mod_version=' gradle.properties | cut -d= -f2)"
-          test "$GITHUB_REF_NAME" = "v$version" || {
-            echo "Tag $GITHUB_REF_NAME does not match mod_version=$version."
+          expected_tag="v${version}"
+          if [ "$GITHUB_REF_NAME" != "$expected_tag" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match mod_version=$version"
             exit 1
-          }
+          fi
+
+          if ! grep -q "^## \\[$version\\]" CHANGELOG.md; then
+            echo "::error::CHANGELOG.md has no section for $version"
+            exit 1
+          fi
 
           case "$version" in
             *-alpha*) release_type=alpha ;;
             *-beta*) release_type=beta ;;
             *-*)
-              echo "Pre-release versions must contain -alpha or -beta."
+              echo "::error::Pre-release versions must contain -alpha or -beta"
               exit 1
               ;;
             *) release_type=release ;;
           esac
 
+          echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "release_type=$release_type" >> "$GITHUB_OUTPUT"
 
-      - name: Build all supported targets
+      - name: Build and test all supported Stonecutter targets
         run: ./gradlew clean buildAndCollect --no-daemon
-
-      - name: Verify all supported target JARs
-        shell: bash
-        run: |
-          mapfile -t target_dirs < <(find versions -mindepth 1 -maxdepth 1 -type d | sort)
-          test "${#target_dirs[@]}" -gt 0 || { echo "No Stonecutter targets were found."; exit 1; }
-
-          for target_dir in "${target_dirs[@]}"; do
-            mapfile -t artifacts < <(
-              find "$target_dir/build/libs" -maxdepth 1 -type f -name '*.jar' \
-                ! -name '*-sources.jar' ! -name '*-dev.jar' 2>/dev/null | sort
-            )
-            test "${#artifacts[@]}" -eq 1 || {
-              echo "Expected exactly one release JAR in $target_dir/build/libs, found ${#artifacts[@]}."
-              printf '  %s\n' "${artifacts[@]}"
-              exit 1
-            }
-          done
 
       - name: Verify publishing configuration
         env:
@@ -82,38 +79,104 @@ jobs:
           CURSEFORGE_TOKEN: ${{ secrets.CURSEFORGE_TOKEN }}
           MODRINTH_PROJECT_ID: ${{ vars.MODRINTH_PROJECT_ID }}
           MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+        shell: bash
         run: |
-          test -n "$CURSEFORGE_PROJECT_ID" || { echo "Missing CURSEFORGE_PROJECT_ID repository variable."; exit 1; }
-          test -n "$CURSEFORGE_TOKEN" || { echo "Missing CURSEFORGE_TOKEN repository secret."; exit 1; }
-          test -n "$MODRINTH_PROJECT_ID" || { echo "Missing MODRINTH_PROJECT_ID repository variable."; exit 1; }
-          test -n "$MODRINTH_TOKEN" || { echo "Missing MODRINTH_TOKEN repository secret."; exit 1; }
+          test -n "$CURSEFORGE_PROJECT_ID" || { echo "::error::Missing CURSEFORGE_PROJECT_ID repository variable"; exit 1; }
+          test -n "$CURSEFORGE_TOKEN" || { echo "::error::Missing CURSEFORGE_TOKEN repository secret"; exit 1; }
+          test -n "$MODRINTH_PROJECT_ID" || { echo "::error::Missing MODRINTH_PROJECT_ID repository variable"; exit 1; }
+          test -n "$MODRINTH_TOKEN" || { echo "::error::Missing MODRINTH_TOKEN repository secret"; exit 1; }
 
       - name: Verify release has not been published
         env:
           GH_TOKEN: ${{ github.token }}
+        shell: bash
         run: |
           if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
-            echo "GitHub release $GITHUB_REF_NAME already exists. Do not overwrite a published release; publish a new version and tag."
+            echo "::error::GitHub release $GITHUB_REF_NAME already exists. Publish a new version and tag instead."
             exit 1
           fi
 
-      - name: Publish to CurseForge and Modrinth
+          mapfile -t target_dirs < <(find versions -mindepth 1 -maxdepth 1 -type d | sort)
+          test "${#target_dirs[@]}" -gt 0 || { echo "::error::No Stonecutter targets were found"; exit 1; }
+
+          for target_dir in "${target_dirs[@]}"; do
+            mapfile -t artifacts < <(
+              find "$target_dir/build/libs" -maxdepth 1 -type f -name '*.jar' \
+                ! -name '*-sources.jar' ! -name '*-dev.jar' 2>/dev/null | sort
+            )
+            test "${#artifacts[@]}" -eq 1 || {
+              echo "::error::Expected exactly one release JAR in $target_dir/build/libs, found ${#artifacts[@]}"
+              printf '  %s\n' "${artifacts[@]}"
+              exit 1
+            }
+          done
+
+      - name: Read changelog
+        id: changelog
+        shell: bash
+        run: |
+          version="${{ steps.release.outputs.version }}"
+          content="$(sed -n "/^## \\[$version\\]/,/^## \\[/{/^## \\[/!p}" CHANGELOG.md)"
+          {
+            echo "content<<CHANGELOG_EOF"
+            printf '%s\n' "$content"
+            echo "CHANGELOG_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Publish to Modrinth and CurseForge
         env:
-          CURSEFORGE_TOKEN: ${{ secrets.CURSEFORGE_TOKEN }}
           MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
-          ORG_GRADLE_PROJECT_curseforge_project_id: ${{ vars.CURSEFORGE_PROJECT_ID }}
+          CURSEFORGE_TOKEN: ${{ secrets.CURSEFORGE_TOKEN }}
           ORG_GRADLE_PROJECT_modrinth_project_id: ${{ vars.MODRINTH_PROJECT_ID }}
-          ORG_GRADLE_PROJECT_release_type: ${{ steps.release_metadata.outputs.release_type }}
-          RELEASE_CHANGELOG: See GitHub release notes for ${{ github.ref_name }}.
+          ORG_GRADLE_PROJECT_curseforge_project_id: ${{ vars.CURSEFORGE_PROJECT_ID }}
+          ORG_GRADLE_PROJECT_release_type: ${{ steps.release.outputs.release_type }}
+          RELEASE_CHANGELOG: ${{ steps.changelog.outputs.content }}
         run: ./gradlew publishMods --no-daemon
 
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
+          CHANGELOG: ${{ steps.changelog.outputs.content }}
+        shell: bash
         run: |
           mapfile -t artifacts < <(find versions -path '*/build/libs/*.jar' -type f ! -name '*-sources.jar' ! -name '*-dev.jar' | sort)
-          release_options=(--generate-notes --title "$GITHUB_REF_NAME")
-          if [ "${{ steps.release_metadata.outputs.release_type }}" != "release" ]; then
-            release_options+=(--prerelease)
+          options=(
+            --title "Ticks ${{ steps.release.outputs.version }}"
+            --notes "$CHANGELOG"
+          )
+          if [ "${{ steps.release.outputs.release_type }}" != "release" ]; then
+            options+=(--prerelease)
           fi
-          gh release create "$GITHUB_REF_NAME" "${artifacts[@]}" "${release_options[@]}"
+          gh release create "$GITHUB_REF_NAME" "${artifacts[@]}" "${options[@]}"
+
+      # Best effort: the release is already published at this point, so a Discord failure must not fail the run.
+      - name: Notify Discord
+        continue-on-error: true
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          DISCORD_ROLE_ID: ${{ vars.DISCORD_ROLE_ID }}
+          CHANGELOG: ${{ steps.changelog.outputs.content }}
+          VERSION: ${{ steps.release.outputs.version }}
+        shell: bash
+        run: |
+          if [ -z "$DISCORD_WEBHOOK_URL" ]; then
+            echo "DISCORD_WEBHOOK_URL is not set, skipping"
+            exit 0
+          fi
+          # Message content is capped at 2000 characters: cut at a line boundary.
+          # Blank lines are dropped (headings already carry their own spacing in Discord); the one
+          # before the role mention is added back. allowed_mentions lets only the updates role ping,
+          # so @everyone in the changelog text cannot. Without DISCORD_ROLE_ID nothing is pinged.
+          payload="$(python3 - <<'PY'
+          import json, os
+          role = os.environ["DISCORD_ROLE_ID"].strip()
+          head = f"# Ticks {os.environ['VERSION']}\n"
+          tail = f"\n\n<@&{role}>" if role else ""
+          body = "\n".join(l.rstrip() for l in os.environ["CHANGELOG"].splitlines() if l.strip())
+          limit = 1990 - len(head) - len(tail)
+          if len(body) > limit:
+              body = body[:limit].rsplit("\n", 1)[0] + "\n…"
+          print(json.dumps({"content": head + body + tail, "allowed_mentions": {"parse": [], "roles": [role] if role else []}}))
+          PY
+          )"
+          curl -fsS -H 'Content-Type: application/json' -d "$payload" "$DISCORD_WEBHOOK_URL"

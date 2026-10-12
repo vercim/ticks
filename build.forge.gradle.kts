@@ -13,7 +13,7 @@ extra["ticksMinecraftVersion"] = minecraftVersion
 extra["ticksPlatform"] = "forge"
 apply(from = rootProject.file("gradle/preprocess-sources.gradle.kts"))
 
-group = "dev.vercim.ticks"
+group = project.property("mod_group") as String
 version = "${project.property("mod_version")}+$minecraftVersion-forge"
 base.archivesName = "ticks"
 
@@ -69,19 +69,13 @@ tasks.processResources {
 		"mod_homepage" to project.property("mod_homepage"),
 		"mod_issues" to project.property("mod_issues"),
 		"minecraft_version" to minecraftVersion,
-		"forge_version" to project.property("forge_version"),
 		"forge_loader_version_range" to project.property("forge_loader_version_range")
 	)
 	inputs.properties(metadata)
 	filesMatching("META-INF/mods.toml") {
 		expand(metadata)
 	}
-	filesMatching("ticks.mixins.json") {
-		expand(
-			"sky_renderer_mixin" to "",
-			"clock_manager_mixin" to ""
-		)
-	}
+	exclude("ticks.mixins.json")
 }
 
 tasks.withType<JavaCompile>().configureEach {

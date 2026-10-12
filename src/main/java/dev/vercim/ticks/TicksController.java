@@ -76,7 +76,7 @@ public final class TicksController {
 			clockLevel = level;
 			clockSynchronized = true;
 			clockFrameBaseTime = authoritativeTime;
-		clockFrameBaseNanos = now;
+			clockFrameBaseNanos = now;
 			clockVelocity = 0.0F;
 		} else {
 			double continuousTime = getContinuousClockTime(level, now, false);
