@@ -1,0 +1,127 @@
+# Version Notes
+
+Per-Minecraft-version notes: exact dependency versions, API differences, and quirks. Read this before porting to a new version or changing a version-specific condition. Build and release steps are in [WORKFLOW.md](WORKFLOW.md); player-facing changes go in [../CHANGELOG.md](../CHANGELOG.md).
+
+## How to use and fill this file
+
+**When to write here**
+
+- You add a target to `settings.gradle.kts` → add a row to the tables below and an entry for the version.
+- You bump a dependency of an existing target → update the dependency table.
+- You hit an API difference, a quirk, or a bug specific to one version → record it in that version's entry.
+- You finish testing a target's packaged JAR → update its `Verified` line.
+
+**What not to put here**
+
+- General rules and architecture → `CLAUDE.md` / `AGENTS.md`.
+- Anything players should read → `CHANGELOG.md`.
+- Step-by-step commands → `WORKFLOW.md`.
+
+**Conventions**
+
+- Newest Minecraft version first in the entries; loaders as sub-notes.
+- Never delete an entry when a target is dropped: move it to [Archived ports](#archived-ports).
+- Keep entries factual and short; link to commits or tags instead of pasting logs.
+
+## Dependencies per target
+
+Values come from `gradle.properties` and the loader build scripts; copy, do not paraphrase.
+
+| Minecraft | Java | Fabric Loader (dev / min) | NeoForge / Forge (dev) |
+|---|---:|---|---|
+| 1.20.1 | 17 | `0.15.11` / `0.14.21` (pinned in `build.fabric.gradle.kts`) | Forge `1.20.1-47.4.26` (`forge_loader_version_range=[47,)`) |
+| 1.21.1 | 21 | `fabric_loader_version` / `fabric_loader_min_version` | `neoforge_version=21.1.259` |
+| 1.21.4 | 21 | same | `neoforge_1_21_4_version=21.4.158` |
+| 1.21.11 | 21 | same | `neoforge_1_21_11_version=21.11.45` |
+| 26.1 | 25 | same | `neoforge_26_1_version=26.1.0.19-beta` |
+| 26.1.2 | 25 | same | `neoforge_26_1_2_version=26.1.2.116` |
+| 26.2 | 25 | `fabric_loader_version` / `fabric_loader_26_2_min_version=0.19.0` | `neoforge_26_2_version=26.2.0.90` |
+
+Current common values: `fabric_loader_version=0.19.5`, `fabric_loader_min_version=0.16.10`, `neoforge_loader_version_range=[4,)`. Ticks has no mod dependencies beyond the loader.
+
+Build tooling versions live in `settings.gradle.kts` (Stonecutter, Loom Back Compat, NeoForge ModDevGradle, Mod Publish Plugin, Foojay) and `gradle/wrapper/gradle-wrapper.properties`. Keep `loomx.loom_version` in `gradle.properties` equal to the `fabric-loom-remap` version in `stonecutter.gradle.kts`. Before bumping any of them, check that Stonecutter, Loom Back Compat, Fabric Loom, and NeoForge ModDev still work together.
+
+Metadata ranges:
+
+- Fabric: `minecraft` is an **exact** match of the target's Minecraft version, `java` is `>=` the target's Java version.
+- NeoForge: Minecraft `[X, X')` where `X'` is the target version with its last component incremented (`26.1.2` → `26.1.3`); NeoForge itself `[neoforge_version,)`.
+- Forge (1.20.1): Minecraft `[1.20.1,1.20.2)`, Forge `[47,)`.
+
+## Baseline
+
+Conditions are written relative to the Minecraft version of the target (`>=1.21.4`, `<26`). The behavior of the oldest hook set is the **MC 1.21.1** column below; each later column lists only what changed.
+
+| Area | 1.20.1 | 1.21.1 (baseline) | 1.21.4 | 1.21.11 | 26.x |
+|---|---|---|---|---|---|
+| Frame hook | `GameRenderer.render(float partialTick, long nanoTime, boolean tick)` HEAD / RETURN (`GameRendererMixin`, `<1.21.1`) | `GameRenderer.render(DeltaTracker, boolean)`; partial tick from `deltaTracker.getGameTimeDeltaPartialTick(false)` (`>=1.21.1 <1.21.11`) | same | `SkyRenderer.extractRenderState(ClientLevel, float, Camera, SkyRenderState)` HEAD / RETURN (`SkyRendererMixin`) | same, with `SkyRenderState` in `net.minecraft.client.renderer.state.level` (`SkyRenderer26Mixin`) |
+| Sky angle | `DimensionType.timeOfDay(long)` overridden while rendering (`DimensionTypeMixin`, `<1.21.11`) | same | same | `renderState.sunAngle` / `starAngle` / `moonAngle` written at RETURN (angle × 2π; moon + π) | same |
+| Server time update | `ClientLevel.setDayTime(long)` HEAD | same | `ClientLevel.setTimeFromServer(long gameTime, long dayTime, boolean tickDayTime)` HEAD; `dayTimeRate` = 1 or 0 from `tickDayTime` | same | `ClientClockManager.handleUpdates(long, Map<Holder<WorldClock>, ClockNetworkState>)` HEAD, overworld clock only (`ClientClockManagerMixin`) |
+| Current sky time | `level.getDayTime()` | same | same | same | `level.getOverworldClockTime()` |
+| Does time advance? | `GameRules.RULE_DAYLIGHT` (`<1.21.4`) | same | `dayTimeRate` (`>=1.21.4`) | same | clock velocity = `tickRateManager().tickrate() * rate` while the game runs normally |
+| Target time per frame | `getDayTime()` + partial tick if the daylight rule is on | same | `getDayTime() + partialTick * dayTimeRate` | same | extrapolated from the last clock update with `SkyTimeMath.advanceClock` |
+| Mixin config template | `ticks.forge.mixins.json` (Forge) / `ticks.mixins.json` | `ticks.mixins.json` | same | adds `SkyRendererMixin` | adds `SkyRenderer26Mixin` and `ClientClockManagerMixin` |
+
+Mixin class source for each column is in `src/main/java/dev/vercim/ticks/mixin/`; the `${sky_renderer_mixin}` / `${clock_manager_mixin}` placeholders are filled in `build.fabric.gradle.kts` and `build.neoforge.gradle.kts` (the Forge target has none and uses its own `ticks.forge.mixins.json`).
+
+## Porting checklist
+
+For each new version, after adding the targets:
+
+- [ ] Add the targets to `settings.gradle.kts`; add the NeoForge (and Forge) version property and the `when` branches in the loader build scripts (`neoForgeVersion`, `javaVersion`, the mixin placeholder expansion).
+- [ ] Frame hook: is `GameRenderer.render` still the right place, or has sky extraction moved (as in 1.21.11)?
+- [ ] Sky angle: `DimensionType.timeOfDay`, `SkyRenderState` fields and their package, `SkyRenderer.extractRenderState` signature.
+- [ ] Time update hook: `ClientLevel.setDayTime` / `setTimeFromServer` / the clock manager; confirm jumps (`/time set`) are detected.
+- [ ] Time advancement: daylight rule, `tickDayTime`, tick rate / freeze handling.
+- [ ] Express differences with narrow conditions in the shared tree, not copied files; update `ticks.mixins.json` placeholders if a mixin class is added.
+- [ ] Mixin config is registered in each packaged JAR; Forge refmap present.
+- [ ] Run `:<target>:test` and the packaged-JAR validation in [WORKFLOW.md](WORKFLOW.md) for each loader.
+- [ ] Fill this file's entry for the version; add a `CHANGELOG.md` line under `Compatibility`.
+
+Likely trouble spots, in order: the frame/sky hook, the time-update hook, then metadata and dependency version ranges.
+
+## Target entries
+
+### MC 26.x — Fabric / NeoForge
+
+Targets: `26.1`, `26.1.2`, `26.2` (each `-fabric` and `-neoforge`) · first tagged version: 1.0.0-beta · date: 2026-07-29
+
+- Java 25; unobfuscated Minecraft (no remapping, `isUnobfuscated` in `build.fabric.gradle.kts`).
+- 26.2 needs Fabric Loader `>=0.19.0` (`fabric_loader_26_2_min_version`).
+- `26.1` uses a NeoForge beta (`26.1.0.19-beta`); revisit when a stable build appears.
+- World time comes from the overworld clock, not `getDayTime()`. `TicksController` extrapolates its own clock (`clock*` fields) from the last clock update and the tick rate; `/tick freeze` and `/tick rate` change its velocity.
+- Verified: in-game validation not recorded (see WORKFLOW.md → Packaged-JAR validation).
+
+### MC 1.21.11 — Fabric / NeoForge
+
+Targets: `1.21.11-fabric`, `1.21.11-neoforge` · first tagged version: 1.0.0-beta · date: 2026-07-29
+
+- Sky rendering is extracted to `SkyRenderState`; `DimensionType.timeOfDay` is no longer the hook (`DimensionTypeMixin` is empty here). `SkyRendererMixin` is the only hook and also begins/ends the frame.
+- Time updates still arrive through `ClientLevel.setTimeFromServer`.
+- Verified: in-game validation not recorded.
+
+### MC 1.21.4 — Fabric / NeoForge
+
+Targets: `1.21.4-fabric`, `1.21.4-neoforge` · first tagged version: 0.1.2-alpha · date: 2026-07-27
+
+- `ClientLevel.setDayTime` is replaced by `setTimeFromServer(gameTime, dayTime, tickDayTime)`; the daylight gamerule no longer drives the time, `tickDayTime` does (`dayTimeRate`).
+- Verified: in-game validation not recorded.
+
+### MC 1.21.1 — Fabric / NeoForge
+
+Targets: `1.21.1-fabric`, `1.21.1-neoforge` · first tagged version: 0.1.2-alpha · date: 2026-07-27 · **default target (`vcsVersion`)**
+
+- `GameRenderer.render(DeltaTracker, boolean)`; the partial tick must be read from the delta tracker with `getGameTimeDeltaPartialTick(false)`.
+- Verified: in-game validation not recorded.
+
+### MC 1.20.1 — Fabric / Forge
+
+Targets: `1.20.1-fabric`, `1.20.1-forge` · first tagged version: 0.1.2-alpha · date: 2026-07-27
+
+- Java 17; Fabric Loader is pinned to `0.15.11` (min `0.14.21`) in `build.fabric.gradle.kts`.
+- Forge uses ModDevGradle legacy (`net.neoforged.moddev.legacyforge`) with Mixin 0.8.5: the annotation processor writes `ticks.forge.refmap.json`, `ticks.forge.mixins.json` is registered through `mods.toml` and the `MixinConfigs` manifest attribute, and `pack.mcmeta` (`pack_format` 15) is required.
+- `GameRenderer.render(float, long, boolean)` is the frame hook (`GameRendererMixin`, `<1.21.1`).
+- Verified: in-game validation not recorded.
+
+## Archived ports
+
+None yet. When a target is dropped, move its entry here unchanged and note the last mod version that shipped it.
