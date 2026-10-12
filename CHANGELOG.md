@@ -2,7 +2,6 @@
 
 ### Fixes
 - The sky now follows the speed at which the server really runs. A tick rate the server cannot reach (for example `/tick rate 10000`) no longer makes the sun and moon race far ahead of the actual day and night on 26.x, or pulse and snap back on older versions.
-- A lagging server no longer makes the sky run ahead and jump back between time updates; sudden corrections are blended instead.
 
 ### Compatibility
 - Added Minecraft 26.3 support for Fabric and NeoForge.
@@ -10,14 +9,10 @@
 
 ### Architecture
 - The visual time is now estimated on every version from the server's time packets and the measured tick rate, instead of the nominal tick rate (26.x) or the client's own tick counter (older versions).
-- Updated build tooling to match Handycam: Gradle 9.8.1, Stonecutter 0.9.8, Loom Back Compat 0.4.3, Fabric Loom 1.18.4, NeoForge ModDevGradle 2.0.148, Mod Publish Plugin 2.2.1, and the Foojay toolchain resolver.
-- Added the `buildActive` and `clean` tasks; `.sc_active_version` is now tracked in the repository.
+- Updated build tooling: Gradle 9.8.1, Stonecutter 0.9.8, Loom Back Compat 0.4.3, Fabric Loom 1.18.4, NeoForge ModDevGradle 2.0.148, Mod Publish Plugin 2.2.1, and the Foojay toolchain resolver.
+
 - CI now sets up JDK 17, 21, and 25 with the Gradle action, and uses current GitHub Actions versions.
 - The Forge JAR no longer contains the unused shared `ticks.mixins.json`, and the source preprocessor no longer uses a Gradle API that Gradle 10 removes.
-- The release workflow now requires a changelog section for the tagged version, publishes it as the release notes on Modrinth, CurseForge, and GitHub, and can announce the release on Discord.
-
-### Documentation
-- Added `CHANGELOG.md`, `CLAUDE.md` (`AGENTS.md` links to it), `docs/WORKFLOW.md`, and `docs/VERSION_NOTES.md`; the release checklist moved from `.github/WORKFLOW.md` to `docs/WORKFLOW.md`.
 
 ## [1.0.0-beta] - 2026-07-29
 
