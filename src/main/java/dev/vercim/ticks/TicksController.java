@@ -15,17 +15,12 @@ import net.minecraft.world.level.dimension.DimensionType;
 public final class TicksController {
 	private static ClientLevel trackedLevel;
 	private static boolean rendering;
-	private static float dayTimeRate = 1.0F;
 	private static Float renderedSkyAngle;
 	private static final SkyTimeInterpolator INTERPOLATOR = new SkyTimeInterpolator();
-	//? >=26 {
-	/*private static ClientLevel clockLevel;
-	private static boolean clockSynchronized;
-	private static long clockServerGameTime;
-	private static double clockAuthoritativeTime;
-	private static double clockFrameBaseTime;
-	private static long clockFrameBaseNanos;
-	private static float clockVelocity;
+	private static final ServerTimeEstimator SERVER_TIME = new ServerTimeEstimator();
+	private static ClientLevel serverTimeLevel;
+	//? >=1.21.4 {
+	/*private static double dayTimeRate = 1.0;
 	*///?}
 
 	private TicksController() {
@@ -43,20 +38,12 @@ public final class TicksController {
 
 		long now = System.nanoTime();
 		boolean paused = minecraft.isPaused();
-		//? >=26 {
-		/*double target = getContinuousClockTime(level, now, paused);
-		*///?}
-		//? <26 {
-		double target = level.getDayTime();
-		//? >=1.21.4 {
-		/*target += partialTick * dayTimeRate;
-		*///?}
-		//? <1.21.4 {
-		if (level.getGameRules().getBoolean(GameRules.RULE_DAYLIGHT)) {
-			target += partialTick;
+		double target;
+		if (serverTimeLevel == level && SERVER_TIME.isSynchronized()) {
+			target = SERVER_TIME.estimate(now, !paused && runsNormally(level), getTickRate(level), getDayTimeRate(level));
+		} else {
+			target = getLocalTime(level, partialTick);
 		}
-		//?}
-		//?}
 
 		INTERPOLATOR.update(level, target, now, TicksConfig.getTransitionTimeMillis(), paused);
 		trackedLevel = level;
@@ -69,57 +56,37 @@ public final class TicksController {
 
 	//? >=26 {
 	/*public static void onClockUpdate(ClientLevel level, long gameTime, long newTime, float partialTick, float rate) {
-		long now = System.nanoTime();
-		double authoritativeTime = newTime + partialTick;
-
-		if (!clockSynchronized || clockLevel != level) {
-			clockLevel = level;
-			clockSynchronized = true;
-			clockFrameBaseTime = authoritativeTime;
-			clockFrameBaseNanos = now;
-			clockVelocity = 0.0F;
-		} else {
-			double continuousTime = getContinuousClockTime(level, now, false);
-			double expectedAdvance = (gameTime - clockServerGameTime) * dayTimeRate;
-			double authoritativeAdvance = authoritativeTime - clockAuthoritativeTime;
-			boolean timeJump = Math.abs(authoritativeAdvance - expectedAdvance) > 0.01;
-
-			if (timeJump) {
-				INTERPOLATOR.markTimeJump(level);
-				clockFrameBaseTime = authoritativeTime;
-			} else {
-				clockFrameBaseTime = continuousTime;
-			}
-			clockFrameBaseNanos = now;
-		}
-
-		clockServerGameTime = gameTime;
-		clockAuthoritativeTime = authoritativeTime;
+		trackServerTime(level, gameTime, newTime + (double) partialTick);
 		dayTimeRate = rate;
+	}
+
+	public static void onGameTimeUpdate(ClientLevel level, long gameTime) {
+		if (serverTimeLevel == level && SERVER_TIME.onGameTimeUpdate(System.nanoTime(), gameTime)) {
+			INTERPOLATOR.markTimeJump(level);
+		}
 	}
 	*///?}
 	//? >=1.21.4 {
 	//? <26 {
-	/*public static void onDayTimeSet(ClientLevel level, long newDayTime, boolean tickDayTime) {
-		dayTimeRate = tickDayTime ? 1.0F : 0.0F;
-		trackDayTimeSet(level, newDayTime);
+	/*public static void onDayTimeSet(ClientLevel level, long gameTime, long newDayTime, boolean tickDayTime) {
+		dayTimeRate = tickDayTime ? 1.0 : 0.0;
+		trackServerTime(level, gameTime, newDayTime);
 	}
 	*///?}
 	//?}
 	//? <1.21.4 {
-	public static void onDayTimeSet(ClientLevel level, long newDayTime) {
-		trackDayTimeSet(level, newDayTime);
+	public static void onDayTimeSet(ClientLevel level, long gameTime, long newDayTime) {
+		// A negative time is how the server tells the client that the day does not advance.
+		trackServerTime(level, gameTime, Math.abs(newDayTime));
 	}
 	//?}
 
-	private static void trackDayTimeSet(ClientLevel level, long newDayTime) {
-		if (!INTERPOLATOR.isTracking(level)) {
-			return;
+	private static void trackServerTime(ClientLevel level, long gameTime, double dayTime) {
+		if (serverTimeLevel != level) {
+			SERVER_TIME.reset();
+			serverTimeLevel = level;
 		}
-
-		long previousDayTime = getSkyTime(level);
-		long delta = newDayTime - previousDayTime;
-		if (delta != 0L && delta != 1L) {
+		if (SERVER_TIME.onTimeUpdate(System.nanoTime(), gameTime, dayTime)) {
 			INTERPOLATOR.markTimeJump(level);
 		}
 	}
@@ -133,25 +100,42 @@ public final class TicksController {
 		return renderedSkyAngle;
 	}
 
-	//? >=26 {
-	/*private static double getContinuousClockTime(ClientLevel level, long now, boolean paused) {
-		if (!clockSynchronized || clockLevel != level) {
-			return level.getOverworldClockTime();
-		}
-
-		float desiredVelocity = !paused && level.tickRateManager().runsNormally()
-				? level.tickRateManager().tickrate() * dayTimeRate
-				: 0.0F;
-		double currentTime = SkyTimeMath.advanceClock(
-				clockFrameBaseTime, now - clockFrameBaseNanos, clockVelocity, 1.0F);
-		if (desiredVelocity != clockVelocity) {
-			clockFrameBaseTime = currentTime;
-			clockFrameBaseNanos = now;
-			clockVelocity = desiredVelocity;
-		}
-		return currentTime;
+	/** The time the client itself keeps, used until the first server time packet of a level has arrived. */
+	private static double getLocalTime(ClientLevel level, float partialTick) {
+		//? >=26 {
+		/*return level.getOverworldClockTime();
+		*///?}
+		//? <26 {
+		return level.getDayTime() + partialTick * getDayTimeRate(level);
+		//?}
 	}
-	*///?}
+
+	private static boolean runsNormally(ClientLevel level) {
+		//? >=1.21.1 {
+		return level.tickRateManager().runsNormally();
+		//?}
+		//? <1.21.1 {
+		/*return true;
+		*///?}
+	}
+
+	private static double getTickRate(ClientLevel level) {
+		//? >=1.21.1 {
+		return level.tickRateManager().tickrate();
+		//?}
+		//? <1.21.1 {
+		/*return 20.0;
+		*///?}
+	}
+
+	private static double getDayTimeRate(ClientLevel level) {
+		//? >=1.21.4 {
+		/*return dayTimeRate;
+		*///?}
+		//? <1.21.4 {
+		return level.getGameRules().getBoolean(GameRules.RULE_DAYLIGHT) ? 1.0 : 0.0;
+		//?}
+	}
 
 	private static long getSkyTime(ClientLevel level) {
 		//? >=26 {
@@ -165,17 +149,12 @@ public final class TicksController {
 	private static void reset() {
 		rendering = false;
 		trackedLevel = null;
-		dayTimeRate = 1.0F;
+		serverTimeLevel = null;
 		renderedSkyAngle = null;
+		SERVER_TIME.reset();
 		INTERPOLATOR.reset();
-		//? >=26 {
-		/*clockLevel = null;
-		clockSynchronized = false;
-		clockServerGameTime = 0L;
-		clockAuthoritativeTime = 0.0;
-		clockFrameBaseTime = 0.0;
-		clockFrameBaseNanos = 0L;
-		clockVelocity = 0.0F;
+		//? >=1.21.4 {
+		/*dayTimeRate = 1.0;
 		*///?}
 	}
 }

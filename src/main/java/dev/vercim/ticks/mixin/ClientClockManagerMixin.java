@@ -34,6 +34,8 @@ abstract class ClientClockManagerMixin {
 				return;
 			}
 		}
+		// The periodic synchronization carries the server's game time but no clock state.
+		TicksController.onGameTimeUpdate(level, gameTime);
 	}
 }
 *///?}
