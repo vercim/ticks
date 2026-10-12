@@ -88,6 +88,7 @@ Targets: `26.1`, `26.1.2`, `26.2`, `26.3` (each `-fabric` and `-neoforge`) · fi
 
 - Java 25; unobfuscated Minecraft (no remapping, `isUnobfuscated` in `build.fabric.gradle.kts`).
 - 26.2 and 26.3 need Fabric Loader `>=0.19.0` (`fabric_loader_26_2_min_version`, shared by both in `build.fabric.gradle.kts`).
+- NeoForge 26.2.0.90 and newer deprecate `logoFile` / `logoBlur` in `neoforge.mods.toml` and show a warning screen at launch; they read `iconFile` / `iconBlur` (square icons) and `bannerFile`. Older NeoForge (21.x, 26.1.x, 26.2 betas) knows only `logoFile`, so `build.neoforge.gradle.kts` fills `${mod_icon}` per target.
 - 26.3 needed no source changes: the 26.2 hooks (`SkyRenderer.extractRenderState`, `ClientClockManager.handleUpdates`, `SkyRenderState` angles) have identical signatures, and the Fabric dev client runs with all five mixins applied. NeoForge `26.3.0.76` is a stable build.
 - `26.1` uses a NeoForge beta (`26.1.0.19-beta`); revisit when a stable build appears.
 - World time comes from the overworld clock, not `getDayTime()`. The server sends the clock state only when it changes (`/time set`, rate, pause, join); the periodic sync every 20 ticks has an empty clock map and carries the game time only, so the day time between clock updates is `clock time + (gameTime - clock gameTime) * rate`. `ServerTimeEstimator` derives it that way and measures the real tick rate from those periodic game times.
