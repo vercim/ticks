@@ -21,6 +21,12 @@ val minecraftVersionUpperBound = minecraftVersion.split(".").toMutableList().let
 	parts.joinToString(".")
 }
 val javaVersion = if (minecraftVersion.startsWith("26.")) 25 else 21
+// NeoForge 26.2 deprecated `logoFile` / `logoBlur` (it shows a warning screen at launch); older versions know only those.
+val modIcon = if (minecraftVersion == "26.2" || minecraftVersion == "26.3") {
+	"iconFile=\"assets/ticks/icon.png\"\niconBlur=false"
+} else {
+	"logoFile=\"assets/ticks/icon.png\"\nlogoBlur=false"
+}
 val releaseType = providers.gradleProperty("release_type").orElse("release").get()
 val displayVersion = (project.property("mod_version") as String).substringBefore('-')
 
@@ -79,7 +85,8 @@ tasks.processResources {
 		"minecraft_version" to minecraftVersion,
 		"neoforge_version" to neoForgeVersion,
 		"neoforge_loader_version_range" to project.property("neoforge_loader_version_range"),
-		"minecraft_version_upper_bound" to minecraftVersionUpperBound
+		"minecraft_version_upper_bound" to minecraftVersionUpperBound,
+		"mod_icon" to modIcon
 	)
 	inputs.properties(metadata)
 	filesMatching("META-INF/neoforge.mods.toml") {
