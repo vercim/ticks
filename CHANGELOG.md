@@ -1,4 +1,4 @@
-## [1.0.1-beta] - 2026-10-12
+## [1.0.1] - 2026-10-12
 
 ### Fixes
 - The sky now follows the speed at which the server really runs. A tick rate the server cannot reach (for example `/tick rate 10000`) no longer makes the sun and moon race far ahead of the actual day and night on 26.x, or pulse and snap back on older versions.
