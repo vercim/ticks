@@ -55,10 +55,10 @@ Conditions are written relative to the Minecraft version of the target (`>=1.21.
 |---|---|---|---|---|---|
 | Frame hook | `GameRenderer.render(float partialTick, long nanoTime, boolean tick)` HEAD / RETURN (`GameRendererMixin`, `<1.21.1`) | `GameRenderer.render(DeltaTracker, boolean)`; partial tick from `deltaTracker.getGameTimeDeltaPartialTick(false)` (`>=1.21.1 <1.21.11`) | same | `SkyRenderer.extractRenderState(ClientLevel, float, Camera, SkyRenderState)` HEAD / RETURN (`SkyRendererMixin`) | same, with `SkyRenderState` in `net.minecraft.client.renderer.state.level` (`SkyRenderer26Mixin`) |
 | Sky angle | `DimensionType.timeOfDay(long)` overridden while rendering (`DimensionTypeMixin`, `<1.21.11`) | same | same | `renderState.sunAngle` / `starAngle` / `moonAngle` written at RETURN (angle × 2π; moon + π) | same |
-| Server time update | `ClientLevel.setDayTime(long)` HEAD | same | `ClientLevel.setTimeFromServer(long gameTime, long dayTime, boolean tickDayTime)` HEAD; `dayTimeRate` = 1 or 0 from `tickDayTime` | same | `ClientClockManager.handleUpdates(long, Map<Holder<WorldClock>, ClockNetworkState>)` HEAD, overworld clock only (`ClientClockManagerMixin`) |
+| Server time update | `ClientLevel.setDayTime(long)` HEAD, skipped while the client's own `tickTime()` runs; a negative day time means the day does not advance; game time is already set | same | `ClientLevel.setTimeFromServer(long gameTime, long dayTime, boolean tickDayTime)` HEAD; `dayTimeRate` = 1 or 0 from `tickDayTime` | same | `ClientClockManager.handleUpdates(long, Map<Holder<WorldClock>, ClockNetworkState>)` HEAD: the overworld clock state when present, otherwise a game-time-only sync (`ClientClockManagerMixin`) |
 | Current sky time | `level.getDayTime()` | same | same | same | `level.getOverworldClockTime()` |
-| Does time advance? | `GameRules.RULE_DAYLIGHT` (`<1.21.4`) | same | `dayTimeRate` (`>=1.21.4`) | same | clock velocity = `tickRateManager().tickrate() * rate` while the game runs normally |
-| Target time per frame | `getDayTime()` + partial tick if the daylight rule is on | same | `getDayTime() + partialTick * dayTimeRate` | same | extrapolated from the last clock update with `SkyTimeMath.advanceClock` |
+| Day time rate | `GameRules.RULE_DAYLIGHT` (`<1.21.4`), read every frame | same | `dayTimeRate` (`>=1.21.4`) | same | clock `rate` of the last overworld clock update |
+| Target time per frame | `ServerTimeEstimator.estimate`; before the first packet of a level `getDayTime()` + partial tick if the daylight rule is on | same | same, with `partialTick * dayTimeRate` before the first packet | same | `ServerTimeEstimator.estimate`; before the first packet `getOverworldClockTime()` |
 | Mixin config template | `ticks.forge.mixins.json` (Forge) / `ticks.mixins.json` | `ticks.mixins.json` | same | adds `SkyRendererMixin` | adds `SkyRenderer26Mixin` and `ClientClockManagerMixin` |
 
 Mixin class source for each column is in `src/main/java/dev/vercim/ticks/mixin/`; the `${sky_renderer_mixin}` / `${clock_manager_mixin}` placeholders are filled in `build.fabric.gradle.kts` and `build.neoforge.gradle.kts` (the Forge target has none and uses its own `ticks.forge.mixins.json`).
@@ -88,7 +88,7 @@ Targets: `26.1`, `26.1.2`, `26.2` (each `-fabric` and `-neoforge`) · first tagg
 - Java 25; unobfuscated Minecraft (no remapping, `isUnobfuscated` in `build.fabric.gradle.kts`).
 - 26.2 needs Fabric Loader `>=0.19.0` (`fabric_loader_26_2_min_version`).
 - `26.1` uses a NeoForge beta (`26.1.0.19-beta`); revisit when a stable build appears.
-- World time comes from the overworld clock, not `getDayTime()`. `TicksController` extrapolates its own clock (`clock*` fields) from the last clock update and the tick rate; `/tick freeze` and `/tick rate` change its velocity.
+- World time comes from the overworld clock, not `getDayTime()`. The server sends the clock state only when it changes (`/time set`, rate, pause, join); the periodic sync every 20 ticks has an empty clock map and carries the game time only, so the day time between clock updates is `clock time + (gameTime - clock gameTime) * rate`. `ServerTimeEstimator` derives it that way and measures the real tick rate from those periodic game times.
 - Verified: in-game validation not recorded (see WORKFLOW.md → Packaged-JAR validation).
 
 ### MC 1.21.11 — Fabric / NeoForge
@@ -111,6 +111,8 @@ Targets: `1.21.4-fabric`, `1.21.4-neoforge` · first tagged version: 0.1.2-alpha
 Targets: `1.21.1-fabric`, `1.21.1-neoforge` · first tagged version: 0.1.2-alpha · date: 2026-07-27 · **default target (`vcsVersion`)**
 
 - `GameRenderer.render(DeltaTracker, boolean)`; the partial tick must be read from the delta tracker with `getGameTimeDeltaPartialTick(false)`.
+- The client advances game and day time itself every tick (`ClientLevel.tickTime`) through the same `setGameTime` / `setDayTime` the server packet uses, so `ClientLevelMixin` marks `tickTime` to tell the packet apart. NeoForge's custom time payload calls those setters directly and never reaches `ClientPacketListener.handleSetTime`: hook the `ClientLevel` setters, not the packet handler.
+- The vanilla packet sends a negative day time when the daylight rule is off; NeoForge's payload does not and updates the rule after `setDayTime`, which is why the rule is read every frame and not when the packet arrives.
 - Verified: in-game validation not recorded.
 
 ### MC 1.20.1 — Fabric / Forge
@@ -120,6 +122,7 @@ Targets: `1.20.1-fabric`, `1.20.1-forge` · first tagged version: 0.1.2-alpha ·
 - Java 17; Fabric Loader is pinned to `0.15.11` (min `0.14.21`) in `build.fabric.gradle.kts`.
 - Forge uses ModDevGradle legacy (`net.neoforged.moddev.legacyforge`) with Mixin 0.8.5: the annotation processor writes `ticks.forge.refmap.json`, `ticks.forge.mixins.json` is registered through `mods.toml` and the `MixinConfigs` manifest attribute, and `pack.mcmeta` (`pack_format` 15) is required.
 - `GameRenderer.render(float, long, boolean)` is the frame hook (`GameRendererMixin`, `<1.21.1`).
+- There is no tick rate manager (`/tick` arrived with 1.20.3): the nominal rate is 20 and time always runs normally. Time packets are handled as on 1.21.1.
 - Verified: in-game validation not recorded.
 
 ## Archived ports

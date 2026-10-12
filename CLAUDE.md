@@ -14,7 +14,7 @@ Ticks — client-side Minecraft mod that renders the sky (sun, moon, stars) at t
 
 ## Current state
 
-- Version `1.0.0-beta` (earlier: `0.1.2-alpha`).
+- Version `1.0.1` (earlier: `1.0.0-beta`, `0.1.2-alpha`).
 - Targets (declared once in `settings.gradle.kts`): `1.20.1-fabric`, `1.20.1-forge`, and `-fabric` / `-neoforge` for `1.21.1`, `1.21.4`, `1.21.11`, `26.1`, `26.1.2`, `26.2`. Per-target details: [docs/VERSION_NOTES.md](docs/VERSION_NOTES.md). Never add long-lived version branches.
 - `vcsVersion = 1.21.1-fabric`: commit with `.sc_active_version` set to `1.21.1-fabric`.
 - README texts and images are shared with the Modrinth and CurseForge pages; keep README edits minimal and user-facing.
@@ -31,25 +31,28 @@ Ticks — client-side Minecraft mod that renders the sky (sun, moon, stars) at t
 
 ```
 src/main/java/dev/vercim/ticks/
-  TicksController.java        — client-only visual time: per-frame target time, time-jump tracking,
-                                sky-angle override, 26.x world-clock extrapolation
+  TicksController.java        — client-only visual time: per-frame target time, server time packet hooks,
+                                sky-angle override
+  ServerTimeEstimator.java    — server day time between time packets: last packet + measured tick rate (no MC classes)
+  TickRateEstimator.java      — ticks per second the server really runs, from its time packets (no MC classes)
   SkyTimeInterpolator.java    — exponential blend of the rendered time toward the target (no MC classes)
-  SkyTimeMath.java            — pure math: shortest day-wrap difference, vanilla sky-angle curve, clock advance
+  SkyTimeMath.java            — pure math: shortest day-wrap difference, vanilla sky-angle curve
   TicksConfig.java            — load/save of config/ticks.json (transitionTimeMillis)
   mixin/
     GameRendererMixin.java    — frame begin/end hook via GameRenderer.render (<1.21.11)
-    ClientLevelMixin.java     — detects server time updates / jumps (setDayTime or setTimeFromServer; <26)
+    ClientLevelMixin.java     — server time packets (setDayTime ignoring the client's own tick on <1.21.4,
+                                setTimeFromServer on 1.21.4–1.21.11; <26)
     DimensionTypeMixin.java   — overrides DimensionType.timeOfDay during rendering (<1.21.11)
     SkyRendererMixin.java     — 1.21.11 only: frame hook + sun/moon/star angles in SkyRenderState
     SkyRenderer26Mixin.java   — 26.x: same on the 26.x SkyRenderState + overworld clock
-    ClientClockManagerMixin.java — 26.x: world-clock network updates → TicksController.onClockUpdate
+    ClientClockManagerMixin.java — 26.x: world-clock updates → onClockUpdate, game-time-only syncs → onGameTimeUpdate
   forge/TicksForge.java, neoforge/TicksNeoForge.java — @Mod entry points (config init), wrapped in loader conditions
 src/fabric/java/.../fabric/TicksFabric.java — ClientModInitializer (config init)
 src/fabric/resources/fabric.mod.json
 src/forge/resources/   — META-INF/mods.toml, pack.mcmeta, ticks.forge.mixins.json
 src/neoforge/resources/META-INF/neoforge.mods.toml
 src/main/resources/    — ticks.mixins.json (template), assets/ticks/icon.png
-src/test/java/dev/vercim/ticks/ — JUnit 5 tests for SkyTimeMath, SkyTimeInterpolator, TicksConfig
+src/test/java/dev/vercim/ticks/ — JUnit 5 tests for SkyTimeMath, SkyTimeInterpolator, ServerTimeEstimator, TickRateEstimator, TicksConfig
 gradle/preprocess-sources.gradle.kts — the source preprocessor shared by all build scripts
 build.fabric.gradle.kts / build.forge.gradle.kts / build.neoforge.gradle.kts — per-loader build + publishing
 stonecutter.gradle.kts — defines `runActiveClient`, `buildActive`, `clean`
@@ -59,12 +62,15 @@ Metadata files (`fabric.mod.json`, `mods.toml`, `neoforge.mods.toml`, `ticks.mix
 
 ## Architecture
 
-Per rendered frame `TicksController.beginFrame(partialTick)` computes the *target* time (the server time plus the partial tick, or on 26.x a clock extrapolated from the tick rate) and feeds it to `SkyTimeInterpolator`. The interpolator keeps an offset between rendered and target time and decays it exponentially over `transitionTimeMillis`; when a time jump is flagged (`markTimeJump`) it re-bases the offset along the shortest route around the 24000-tick day. The vanilla sky-angle curve is then applied to the fractional rendered time (`SkyTimeMath.skyAngle`) and used only until `endFrame()`.
+Per rendered frame `TicksController.beginFrame(partialTick)` computes the *target* time and feeds it to `SkyTimeInterpolator`. The interpolator keeps an offset between rendered and target time and decays it exponentially over `transitionTimeMillis`; when a time jump is flagged (`markTimeJump`) it re-bases the offset along the shortest route around the 24000-tick day. The vanilla sky-angle curve is then applied to the fractional rendered time (`SkyTimeMath.skyAngle`) and used only until `endFrame()`.
+
+The target is the server's day time as `ServerTimeEstimator` extrapolates it: the last server time packet, advanced at the **measured** speed of the server's game clock (`TickRateEstimator`, from the game times of the packets). Neither the nominal tick rate (`/tick rate`) nor the client's own ticking can be used for this: a server often runs slower than its nominal rate (`/tick rate 10000`, or just lag), and the client ticks at the nominal rate regardless. Every packet re-anchors the estimate, so a wrong speed cannot accumulate into drift. Until the first packet of a level arrives the client's own time is used.
 
 - **<1.21.11:** `GameRendererMixin` brackets `GameRenderer.render` with `beginFrame` / `endFrame`; `DimensionTypeMixin` replaces `DimensionType.timeOfDay(long)` while `rendering` is set and the requested day time matches the tracked level.
 - **1.21.11 and 26.x:** the sky is extracted to a `SkyRenderState`; `SkyRendererMixin` / `SkyRenderer26Mixin` call `beginFrame` at the head of `extractRenderState` and write the sun, star, and moon angles at its return, then `endFrame`. `DimensionTypeMixin` has no effect there.
-- **Time jumps:** `ClientLevelMixin` (`setDayTime` on <1.21.4, `setTimeFromServer` on 1.21.4–1.21.11) flags a jump when the new time differs from the old by anything other than 0 or 1 tick. On 26.x `ClientClockManagerMixin` forwards overworld clock updates to `onClockUpdate`, which compares the authoritative advance against the expected one.
-- **Pause:** while `Minecraft.isPaused()` the interpolator advances no time, so the blend does not drain during a pause menu.
+- **Time packets:** `ClientLevelMixin` (`setDayTime` on <1.21.4, where the client's own per-tick calls are skipped through `tickTime`; `setTimeFromServer` on 1.21.4–1.21.11) forwards each server packet's game time and day time. On 26.x `ClientClockManagerMixin` forwards overworld clock updates, and the periodic game-time-only syncs (empty clock map) that carry the speed measurement. Do not hook `ClientPacketListener.handleSetTime`: NeoForge's custom time payload bypasses it.
+- **Time jumps:** a packet whose day time differs from the previous one by more than the game ticks between them allow (`/time set`, sleeping) is flagged as a jump (`markTimeJump`); large corrections after lag are flagged too, so they blend instead of snapping.
+- **Pause and freeze:** while `Minecraft.isPaused()` or the tick rate manager does not run normally (`/tick freeze`) the estimate holds still, and the interpolator advances no time, so the blend does not drain during a pause menu.
 - **Fixed-time dimensions** (`hasFixedTime`) and non-tracked levels are never overridden.
 
 Keep `SkyTimeMath` and `SkyTimeInterpolator` free of Minecraft classes so they stay unit-testable.
@@ -110,3 +116,4 @@ Build and run problems (wrong JDK, missing symbols in a generated target, wrong 
 - **Sky does not move smoothly / mixin has no effect** → check the mixin config is registered in the packaged JAR and that the version-specific mixin is listed (`${sky_renderer_mixin}` / `${clock_manager_mixin}` in `ticks.mixins.json` are filled by each loader build script).
 - **`required: true` mixin failure at startup** → a mixin target changed in that Minecraft version; `injectors.defaultRequire` is `1`, so a broken injection crashes loudly instead of silently doing nothing; keep it.
 - **Sky jumps after `/time set` or a server time sync** → the jump was not flagged; check the time-update hook for that version in `ClientLevelMixin` / `ClientClockManagerMixin`.
+- **Sky runs faster or slower than the real day/night (high `/tick rate`, lagging server)** → the speed estimate is wrong; check that every periodic time packet (on 26.x including the one with an empty clock map) reaches `TicksController`, and that `ServerTimeEstimator.getTickRate()` matches the ticks per second the server really runs.
