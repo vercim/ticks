@@ -68,8 +68,6 @@ Do not use `clean` routinely: it discards Gradle and Minecraft preparation work.
 
 Outputs: collected release JARs are in `build/libs/<mod_version>/` (for example `ticks-1.0.0-beta+1.21.1-fabric.jar`); per-target output is in `versions/<target>/build/libs/` (`-sources` JARs are not published).
 
-Commit with `1.21.1-fabric` active (the configured `vcsVersion`).
-
 ## Conditional sources
 
 Version- and loader-specific code lives in the shared tree inside condition blocks. The blocks are processed by [`gradle/preprocess-sources.gradle.kts`](../gradle/preprocess-sources.gradle.kts), which every loader build script applies: it writes the result for the target to `versions/<target>/build/generated/sources/ticks/main`, and that is the only tree that gets compiled. The files under `src/` are never compiled directly, so what they look like for a given target in an editor does not matter to the build.
