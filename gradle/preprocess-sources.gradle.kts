@@ -67,7 +67,7 @@ val preprocessMainSources = tasks.register("preprocessMainSources") {
 
 	doLast {
 		val outputDirectory = processedSourcesDirectory.get().asFile.toPath()
-		project.delete(outputDirectory)
+		outputDirectory.toFile().deleteRecursively()
 
 		for (sourceDirectory in sourceDirectories) {
 			if (!Files.exists(sourceDirectory)) {

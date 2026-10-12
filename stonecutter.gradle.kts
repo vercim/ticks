@@ -2,24 +2,29 @@
 
 plugins {
 	id("dev.kikugie.stonecutter")
-	id("net.fabricmc.fabric-loom-remap") version "1.17.17" apply false
+	id("net.fabricmc.fabric-loom-remap") version "1.18.4" apply false
 }
 
-val activeVersionFile = file(".sc_active_version")
-if (activeVersionFile.isFile) {
-	stonecutter active activeVersionFile
-} else {
-	stonecutter active "1.21.1-fabric"
-}
+stonecutter active file(".sc_active_version")
 
 stonecutter parameters {
 	constants.match(current.project.substringAfterLast('-'), "fabric", "forge", "neoforge")
 }
 
-if (activeVersionFile.isFile) {
-	tasks.register("runActiveClient") {
-		group = "stonecutter"
-		description = "Runs the client for the active Stonecutter target."
-		dependsOn(stonecutter.current!!.project + ":runClient")
-	}
+tasks.register<org.gradle.api.tasks.Delete>("clean") {
+	group = "build"
+	description = "Cleans collected artifacts and every selected target when used as an unqualified task."
+	delete(layout.buildDirectory)
+}
+
+tasks.register("runActiveClient") {
+	group = "stonecutter"
+	description = "Runs the client for the active Stonecutter target."
+	dependsOn(stonecutter.current!!.project + ":runClient")
+}
+
+tasks.register("buildActive") {
+	group = "stonecutter"
+	description = "Builds the active Stonecutter target."
+	dependsOn(stonecutter.current!!.project + ":build")
 }

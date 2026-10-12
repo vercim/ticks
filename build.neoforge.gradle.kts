@@ -4,7 +4,7 @@ plugins {
 	id("me.modmuss50.mod-publish-plugin")
 }
 
-group = "dev.vercim.ticks"
+group = project.property("mod_group") as String
 val minecraftVersion = stonecutter.current.version.substringBeforeLast('-')
 val neoForgeVersion = when (minecraftVersion) {
 	"1.21.1" -> project.property("neoforge_version") as String

@@ -25,7 +25,7 @@ extra["ticksMinecraftVersion"] = minecraftVersion
 extra["ticksPlatform"] = "fabric"
 apply(from = rootProject.file("gradle/preprocess-sources.gradle.kts"))
 
-group = "dev.vercim.ticks"
+group = project.property("mod_group") as String
 version = "${project.property("mod_version")}+$minecraftVersion-fabric"
 base.archivesName = "ticks"
 
