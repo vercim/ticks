@@ -16,6 +16,7 @@ Ticks — client-side Minecraft mod that renders the sky (sun, moon, stars) at t
 
 - Version `1.0.2` (earlier: `1.0.1`, `1.0.0-beta`, `0.1.2-alpha`).
 - Targets (declared once in `settings.gradle.kts`): `1.20.1-fabric`, `1.20.1-forge`, and `-fabric` / `-neoforge` for `1.21.1`, `1.21.4`, `1.21.11`, `26.1`, `26.1.2`, `26.2`, `26.3`. Per-target details: [docs/VERSION_NOTES.md](docs/VERSION_NOTES.md). Never add long-lived version branches.
+- `vcsVersion = 26.3-fabric` (the newest target): commit with `.sc_active_version` set to `26.3-fabric` and `src/` in its state. When a newer target is added, move `vcsVersion` to it.
 - README texts and images are shared with the Modrinth and CurseForge pages; keep README edits minimal and user-facing.
 
 ## Rules that must not be forgotten
@@ -24,8 +25,8 @@ Ticks — client-side Minecraft mod that renders the sky (sun, moon, stars) at t
 - IDE-only runs prove nothing about loader integration; validate the packaged JAR from `build/libs/<mod_version>/` in a clean client profile (steps in [docs/WORKFLOW.md](docs/WORKFLOW.md)).
 - Every JAR must register its mixin config (`ticks.mixins.json` for Fabric and NeoForge, `ticks.forge.mixins.json` + refmap for Forge), and loader-specific classes must be absent from the other loaders' JARs. A missing registration makes the mod load while every injection silently does nothing.
 - Build commands differ per OS (`.\gradlew.bat` on Windows, `./gradlew` on macOS/Linux); take them from [docs/WORKFLOW.md](docs/WORKFLOW.md) rather than guessing.
-- The default Stonecutter target (`vcsVersion` in `settings.gradle.kts` and the committed `.sc_active_version`) is always the latest Minecraft version, Fabric build: currently `26.3-fabric`. Switch `.sc_active_version` only temporarily and restore it before committing; move both when a new version is ported ([docs/WORKFLOW.md](docs/WORKFLOW.md#default-target)).
-- Conditional-source syntax in this repo is **not** stock Stonecutter: a custom preprocessor handles it (see [Conditional sources](#conditional-sources)). Do not write `if` / `else` forms.
+- The default Stonecutter target (`vcsVersion` in `settings.gradle.kts` and the committed `.sc_active_version`) is always the latest Minecraft version, Fabric build: currently `26.3-fabric`. The committed `src/` is in that target's state. Switch targets only with `Set active project to <target>` (it rewrites `src/`) and restore the default before committing (`Reset active project`); move both when a new version is ported ([docs/WORKFLOW.md](docs/WORKFLOW.md#default-target)).
+- Conditional sources are plain Stonecutter comments (`//? if … {`), and the active target compiles straight from `src/`: after editing `.sc_active_version` by hand, or when a conditional block looks wrong, the sources are stale until `Set active project to <target>` or `Refresh active project` runs (see [Conditional sources](#conditional-sources)).
 
 ## Structure
 
@@ -46,16 +47,15 @@ src/main/java/dev/vercim/ticks/
     SkyRendererMixin.java     — 1.21.11 only: frame hook + sun/moon/star angles in SkyRenderState
     SkyRenderer26Mixin.java   — 26.x: same on the 26.x SkyRenderState + overworld clock
     ClientClockManagerMixin.java — 26.x: world-clock updates → onClockUpdate, game-time-only syncs → onGameTimeUpdate
-  forge/TicksForge.java, neoforge/TicksNeoForge.java — @Mod entry points (config init), wrapped in loader conditions
-src/fabric/java/.../fabric/TicksFabric.java — ClientModInitializer (config init)
+  fabric/TicksFabric.java, forge/TicksForge.java, neoforge/TicksNeoForge.java — loader entry points (config init),
+                                each wrapped in its loader condition
 src/fabric/resources/fabric.mod.json
 src/forge/resources/   — META-INF/mods.toml, pack.mcmeta, ticks.forge.mixins.json
 src/neoforge/resources/META-INF/neoforge.mods.toml
 src/main/resources/    — ticks.mixins.json (template), assets/ticks/icon.png
 src/test/java/dev/vercim/ticks/ — JUnit 5 tests for SkyTimeMath, SkyTimeInterpolator, ServerTimeEstimator, TickRateEstimator, TicksConfig
-gradle/preprocess-sources.gradle.kts — the source preprocessor shared by all build scripts
 build.fabric.gradle.kts / build.forge.gradle.kts / build.neoforge.gradle.kts — per-loader build + publishing
-stonecutter.gradle.kts — defines `runActiveClient`, `buildActive`, `clean`
+stonecutter.gradle.kts — loader constants for conditions, `runActiveClient`, `buildActive`, `clean`
 ```
 
 Metadata files (`fabric.mod.json`, `mods.toml`, `neoforge.mods.toml`, `ticks.mixins.json`) are templates: Gradle `expand`s `${...}` values from `gradle.properties` and the build scripts, so edit values there, not in the generated JAR.
@@ -77,7 +77,14 @@ Keep `SkyTimeMath` and `SkyTimeInterpolator` free of Minecraft classes so they s
 
 ## Conditional sources
 
-Version- and loader-specific code uses `//? <condition> {` … `//?}` blocks; the inactive code is commented out as `/* … *///?}`. The syntax is parsed by `gradle/preprocess-sources.gradle.kts`, which writes the processed tree to `versions/<target>/build/generated/sources/ticks/main`; the in-tree files are never compiled directly. Only three condition forms exist (`fabric`/`forge`/`neoforge`, `>=<mc version>`, `<<mc version>`), nesting means AND, and there is no `else`: express it with two sibling blocks. Details and examples: [docs/WORKFLOW.md](docs/WORKFLOW.md#conditional-sources). Express Minecraft-version differences with narrow local conditions, never by copying files.
+Version- and loader-specific code uses Stonecutter conditions, `//? if <condition> {` … `//?}`; the code of an inactive block is commented out as `/* … *///?}`. A condition is a loader constant (`fabric`, `forge`, `neoforge`, defined in `stonecutter.gradle.kts`) or a Minecraft version predicate (`>=1.21.4`, `<26`), and may use `else`, `else if`, and `&&`. The active target (`.sc_active_version`) compiles straight from `src/`, every other target from a generated copy under `versions/<target>/build/generated/stonecutter`, so the committed tree always shows the default target's state. Details and examples: [docs/WORKFLOW.md](docs/WORKFLOW.md#conditional-sources). Express Minecraft-version differences with narrow local conditions, never by copying files.
+
+## Loader integration
+
+- **Mixins:** Fabric registers `ticks.mixins.json` in `fabric.mod.json` (`"mixins"`); NeoForge needs `[[mixins]]` in `META-INF/neoforge.mods.toml`; Forge 1.20.1 registers `ticks.forge.mixins.json` through `[[mixins]]` in `META-INF/mods.toml` and the `MixinConfigs` manifest attribute, and needs the `ticks.forge.refmap.json` the Forge build adds (SRG names at runtime).
+- **Entry points:** each loader calls `TicksConfig.initialize(configDir)` with its own config directory; there is no config screen, so no mod-list integration beyond metadata.
+- **Fabric dev client:** also loads Fabric API and Mod Menu (development only, not in the JAR); details in [docs/VERSION_NOTES.md](docs/VERSION_NOTES.md).
+- **Plugins:** before changing the Gradle wrapper or a build plugin, check that Stonecutter, Loom Back Compat, Fabric Loom, and NeoForge ModDev still work together.
 
 ## Config
 
@@ -107,7 +114,7 @@ Imperative, title-case commit subjects (for example `Add Minecraft 26.2 support`
 
 ## Porting to a new Minecraft version
 
-Add the two targets in `settings.gradle.kts` (loader versions in `gradle.properties` and the per-loader build script) and fix API differences with narrow conditions — never a new long-lived branch. The checklist, the baseline API table, and the notes from every earlier port are in [docs/VERSION_NOTES.md](docs/VERSION_NOTES.md); fill its entry for the new version as you go. Move the default target to the new version's Fabric target. Start with the frame hook and sky-render mixins, then the time-update hook.
+Add the two targets in `settings.gradle.kts` (loader versions in `gradle.properties` and the per-loader build script) and fix API differences with narrow conditions — never a new long-lived branch. The checklist, the baseline API table, and the notes from every earlier port are in [docs/VERSION_NOTES.md](docs/VERSION_NOTES.md); fill its entry for the new version as you go. Move the default target to the new version's Fabric target (`vcsVersion`, `.sc_active_version`, then `Set active project to <target>` so `src/` follows). Start with the frame hook and sky-render mixins, then the time-update hook.
 
 ## Common issues
 

@@ -3,9 +3,9 @@ package dev.vercim.ticks.mixin;
 import dev.vercim.ticks.TicksController;
 import net.minecraft.client.multiplayer.ClientLevel;
 import org.spongepowered.asm.mixin.Mixin;
-//? <1.21.4 {
-/*
-import org.spongepowered.asm.mixin.Unique;
+//? if <1.21.4 {
+
+/*import org.spongepowered.asm.mixin.Unique;
 *///?}
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -13,15 +13,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ClientLevel.class)
 abstract class ClientLevelMixin {
-	//? <26 {
-	//? >=1.21.4 {
-	/*@Inject(method = "setTimeFromServer", at = @At("HEAD"))
+	//? if <26 {
+	/*//? if >=1.21.4 {
+	@Inject(method = "setTimeFromServer", at = @At("HEAD"))
 	private void ticks$trackTimeUpdate(long gameTime, long dayTime, boolean tickDayTime, CallbackInfo callbackInfo) {
 		TicksController.onDayTimeSet((ClientLevel) (Object) this, gameTime, dayTime, tickDayTime);
 	}
-	*///?}
-	//? <1.21.4 {
-	// The client advances its own game and day time every tick through the same setters the server packet uses.
+	//?}
+	//? if <1.21.4 {
+	/^// The client advances its own game and day time every tick through the same setters the server packet uses.
 	@Unique
 	private boolean ticks$localTick;
 
@@ -42,6 +42,6 @@ abstract class ClientLevelMixin {
 			TicksController.onDayTimeSet(level, level.getGameTime(), dayTime);
 		}
 	}
-	//?}
-	//?}
+	^///?}
+	*///?}
 }

@@ -1,6 +1,6 @@
 package dev.vercim.ticks.neoforge;
 
-//? neoforge {
+//? if neoforge {
 /*import dev.vercim.ticks.TicksConfig;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.loading.FMLPaths;

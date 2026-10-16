@@ -2,9 +2,9 @@ package dev.vercim.ticks;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-//? <1.21.4 {
-/*
-import net.minecraft.world.level.GameRules;
+//? if <1.21.4 {
+
+/*import net.minecraft.world.level.GameRules;
 *///?}
 import net.minecraft.world.level.dimension.DimensionType;
 
@@ -19,9 +19,9 @@ public final class TicksController {
 	private static final SkyTimeInterpolator INTERPOLATOR = new SkyTimeInterpolator();
 	private static final ServerTimeEstimator SERVER_TIME = new ServerTimeEstimator();
 	private static ClientLevel serverTimeLevel;
-	//? >=1.21.4 {
-	/*private static double dayTimeRate = 1.0;
-	*///?}
+	//? if >=1.21.4 {
+	private static double dayTimeRate = 1.0;
+	//?}
 
 	private TicksController() {
 	}
@@ -54,8 +54,8 @@ public final class TicksController {
 		rendering = false;
 	}
 
-	//? >=26 {
-	/*public static void onClockUpdate(ClientLevel level, long gameTime, long newTime, float partialTick, float rate) {
+	//? if >=26 {
+	public static void onClockUpdate(ClientLevel level, long gameTime, long newTime, float partialTick, float rate) {
 		trackServerTime(level, gameTime, newTime + (double) partialTick);
 		dayTimeRate = rate;
 	}
@@ -65,21 +65,21 @@ public final class TicksController {
 			INTERPOLATOR.markTimeJump(level);
 		}
 	}
-	*///?}
-	//? >=1.21.4 {
-	//? <26 {
+	//?}
+	//? if >=1.21.4 {
+	//? if <26 {
 	/*public static void onDayTimeSet(ClientLevel level, long gameTime, long newDayTime, boolean tickDayTime) {
 		dayTimeRate = tickDayTime ? 1.0 : 0.0;
 		trackServerTime(level, gameTime, newDayTime);
 	}
 	*///?}
 	//?}
-	//? <1.21.4 {
-	public static void onDayTimeSet(ClientLevel level, long gameTime, long newDayTime) {
+	//? if <1.21.4 {
+	/*public static void onDayTimeSet(ClientLevel level, long gameTime, long newDayTime) {
 		// A negative time is how the server tells the client that the day does not advance.
 		trackServerTime(level, gameTime, Math.abs(newDayTime));
 	}
-	//?}
+	*///?}
 
 	private static void trackServerTime(ClientLevel level, long gameTime, double dayTime) {
 		if (serverTimeLevel != level) {
@@ -102,48 +102,48 @@ public final class TicksController {
 
 	/** The time the client itself keeps, used until the first server time packet of a level has arrived. */
 	private static double getLocalTime(ClientLevel level, float partialTick) {
-		//? >=26 {
-		/*return level.getOverworldClockTime();
-		*///?}
-		//? <26 {
-		return level.getDayTime() + partialTick * getDayTimeRate(level);
+		//? if >=26 {
+		return level.getOverworldClockTime();
 		//?}
+		//? if <26 {
+		/*return level.getDayTime() + partialTick * getDayTimeRate(level);
+		*///?}
 	}
 
 	private static boolean runsNormally(ClientLevel level) {
-		//? >=1.21.1 {
+		//? if >=1.21.1 {
 		return level.tickRateManager().runsNormally();
 		//?}
-		//? <1.21.1 {
+		//? if <1.21.1 {
 		/*return true;
 		*///?}
 	}
 
 	private static double getTickRate(ClientLevel level) {
-		//? >=1.21.1 {
+		//? if >=1.21.1 {
 		return level.tickRateManager().tickrate();
 		//?}
-		//? <1.21.1 {
+		//? if <1.21.1 {
 		/*return 20.0;
 		*///?}
 	}
 
 	private static double getDayTimeRate(ClientLevel level) {
-		//? >=1.21.4 {
-		/*return dayTimeRate;
-		*///?}
-		//? <1.21.4 {
-		return level.getGameRules().getBoolean(GameRules.RULE_DAYLIGHT) ? 1.0 : 0.0;
+		//? if >=1.21.4 {
+		return dayTimeRate;
 		//?}
+		//? if <1.21.4 {
+		/*return level.getGameRules().getBoolean(GameRules.RULE_DAYLIGHT) ? 1.0 : 0.0;
+		*///?}
 	}
 
 	private static long getSkyTime(ClientLevel level) {
-		//? >=26 {
-		/*return level.getOverworldClockTime();
-		*///?}
-		//? <26 {
-		return level.getDayTime();
+		//? if >=26 {
+		return level.getOverworldClockTime();
 		//?}
+		//? if <26 {
+		/*return level.getDayTime();
+		*///?}
 	}
 
 	private static void reset() {
@@ -153,8 +153,8 @@ public final class TicksController {
 		renderedSkyAngle = null;
 		SERVER_TIME.reset();
 		INTERPOLATOR.reset();
-		//? >=1.21.4 {
-		/*dayTimeRate = 1.0;
-		*///?}
+		//? if >=1.21.4 {
+		dayTimeRate = 1.0;
+		//?}
 	}
 }

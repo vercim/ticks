@@ -1,5 +1,6 @@
 package dev.vercim.ticks.fabric;
 
+//? if fabric {
 import dev.vercim.ticks.TicksConfig;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
@@ -10,3 +11,4 @@ public final class TicksFabric implements ClientModInitializer {
 		TicksConfig.initialize(FabricLoader.getInstance().getConfigDir());
 	}
 }
+//?}

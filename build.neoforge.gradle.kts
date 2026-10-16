@@ -30,10 +30,6 @@ val modIcon = if (minecraftVersion == "26.2" || minecraftVersion == "26.3") {
 val releaseType = providers.gradleProperty("release_type").orElse("release").get()
 val displayVersion = (project.property("mod_version") as String).substringBefore('-')
 
-extra["ticksMinecraftVersion"] = minecraftVersion
-extra["ticksPlatform"] = "neoforge"
-apply(from = rootProject.file("gradle/preprocess-sources.gradle.kts"))
-
 version = "${project.property("mod_version")}+$minecraftVersion-neoforge"
 base.archivesName = "ticks"
 
