@@ -58,7 +58,10 @@ dependencies {
 	loomx.applyMojangMappings()
 	modImplementation("net.fabricmc:fabric-loader:$fabricLoaderVersion")
 	// Development-only: shows the mod in the dev client's mod list; never reaches the compile classpath or the JAR.
-	modLocalRuntime("com.terraformersmc:modmenu:${project.property("modmenu_version_" + minecraftVersion.replace('.', '_'))}")
+	// Mod Menu needs Fabric API modules, and Loom drops the ones nested in its JAR, so Fabric API is added next to it.
+	val versionKey = minecraftVersion.replace('.', '_')
+	modLocalRuntime("net.fabricmc.fabric-api:fabric-api:${project.property("fabric_api_version_$versionKey")}")
+	modLocalRuntime("com.terraformersmc:modmenu:${project.property("modmenu_version_$versionKey")}")
 
 	testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
 	testImplementation("com.google.code.gson:gson:2.10.1")
