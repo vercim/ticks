@@ -222,7 +222,7 @@ Use a clean client profile each time, and record the outcome in the target's `Ve
 4. Commit and push the release to `main` (with `.sc_active_version` on the [default target](#default-target)), then create and push the matching `v<mod_version>` tag:
 
    ```bash
-   git tag -a v<mod_version>
+   git tag v<mod_version>
    ```
 
    ```bash
