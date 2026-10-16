@@ -17,6 +17,13 @@ Ticks uses one [Stonecutter](https://stonecutter.kikugie.dev/) repository: a sin
 
 The matrix is declared once in [`settings.gradle.kts`](../settings.gradle.kts); the Java version of each target is chosen in its loader build script. The active target for the convenience tasks is stored in `.sc_active_version`. Dependency versions per target: [VERSION_NOTES.md](VERSION_NOTES.md).
 
+### Default target
+
+The default Stonecutter target is always the **latest Minecraft version**, Fabric build: currently `26.3-fabric`. It lives in two places that must stay equal: `vcsVersion` in [`settings.gradle.kts`](../settings.gradle.kts) and the committed `.sc_active_version`.
+
+- Switching `.sc_active_version` to another target for local work is fine, but restore the default before committing: `.sc_active_version` must not appear in the diff.
+- When a new Minecraft version is added, move both to its Fabric target in the same change.
+
 ## Requirements
 
 - JDK 25+ to launch Gradle (Fabric Loom 1.18 refuses to load on anything older). The Java 17, 21, and 25 toolchains that compile the targets are provisioned automatically (Foojay resolver); CI installs all three explicitly.
@@ -45,43 +52,27 @@ Each command is in its own block so it can be copied on its own.
 
 ### Windows (PowerShell)
 
-Select the active target (any target name from the matrix instead of `1.21.1-fabric`):
+Select the active target (any target name from the matrix instead of `26.3-fabric`, the [default target](#default-target)):
 
 ```powershell
-Set-Content -NoNewline -Path .sc_active_version -Value "1.21.1-fabric"
+Set-Content -NoNewline -Path .sc_active_version -Value "26.3-fabric"
 ```
-
-Run the client of the active target:
 
 ```powershell
 .\gradlew.bat runActiveClient
 ```
 
-Build the active target:
-
 ```powershell
 .\gradlew.bat buildActive
 ```
-
-Build and test every target:
 
 ```powershell
 .\gradlew.bat build
 ```
 
-Build every target and collect the release JARs:
-
 ```powershell
 .\gradlew.bat buildAndCollect
 ```
-
-Fresh full build (release verification only):
-
-```powershell
-.\gradlew.bat clean buildAndCollect
-```
-
-Build one target:
 
 ```powershell
 .\gradlew.bat :1.21.1-neoforge:build
@@ -95,43 +86,27 @@ Test one target:
 
 ### macOS / Linux
 
-Select the active target (any target name from the matrix instead of `1.21.1-fabric`):
+Select the active target (any target name from the matrix instead of `26.3-fabric`, the [default target](#default-target)):
 
 ```bash
-printf '1.21.1-fabric' > .sc_active_version
+printf '26.3-fabric' > .sc_active_version
 ```
-
-Run the client of the active target:
 
 ```bash
 ./gradlew runActiveClient
 ```
 
-Build the active target:
-
 ```bash
 ./gradlew buildActive
 ```
-
-Build and test every target:
 
 ```bash
 ./gradlew build
 ```
 
-Build every target and collect the release JARs:
-
 ```bash
 ./gradlew buildAndCollect
 ```
-
-Fresh full build (release verification only):
-
-```bash
-./gradlew clean buildAndCollect
-```
-
-Build one target:
 
 ```bash
 ./gradlew :1.21.1-neoforge:build
@@ -179,7 +154,7 @@ Rules enforced by the preprocessor:
 - A block opens with `//? <condition> {` on its own line and closes with `//?}` or `*///?}`.
 - A condition is one of `fabric`, `forge`, `neoforge` (the target's loader), `>=X.Y.Z` (target Minecraft version at least X.Y.Z), or `<X.Y.Z` (target Minecraft version below X.Y.Z). Nested blocks are combined with AND.
 - There is no `else` and no `if`: write two sibling blocks with complementary conditions.
-- Inactive code is kept commented as `/* … *///?}`; for an active block the preprocessor removes a leading `/*` from a line, so a block may be stored commented-out.
+- Inactive code is kept commented as `/* … *///?}`. The preprocessor removes the leading `/*` from every kept line that starts with `/*` (but not `/**`), inside a block or not, so a block may be stored commented-out; never start an ordinary comment line with `/*`.
 - If a whole class is loader- or version-specific, keep its `package` declaration outside the block so the other targets generate an empty source file (see `forge/TicksForge.java`, `mixin/SkyRendererMixin.java`).
 
 Keep conditions as narrow as practical. Minecraft-version differences are expressed the same way, next to the affected code ([VERSION_NOTES.md](VERSION_NOTES.md)). Mixin classes that only exist for some versions are also listed through the `${sky_renderer_mixin}` / `${clock_manager_mixin}` placeholders in `ticks.mixins.json`, which each loader build script fills in; update both places when a version-specific mixin is added.
@@ -197,6 +172,7 @@ Documentation-only changes (including `docs/`, `README.md`, `CHANGELOG.md`, `CLA
 A change is ready to merge when:
 
 - every target compiles, passes its tests, and produces its release JAR;
+- `.sc_active_version` and `vcsVersion` name the latest target (see [Default target](#default-target));
 - each JAR contains and registers its mixin config (see below);
 - loader-specific classes do not leak into the other loaders' JARs;
 - behavior stays compatible with the previous release.
@@ -230,21 +206,20 @@ Use a clean client profile each time, and record the outcome in the target's `Ve
    - stable: `1.2.3`
    - beta: `1.2.3-beta` (or `1.2.3-beta.1`)
    - alpha: `1.2.3-alpha` (or `1.2.3-alpha.1`)
-2. Run `clean buildAndCollect` (commands above for your OS); the sixteen JARs are collected in `build/libs/<mod_version>/`.
+2. Run a fresh full build; the sixteen JARs are collected in `build/libs/<mod_version>/`. Windows:
+
+   ```powershell
+   .\gradlew.bat clean buildAndCollect
+   ```
+
+   macOS / Linux:
+
+   ```bash
+   ./gradlew clean buildAndCollect
+   ```
+
 3. Validate the packaged JARs (see above).
-4. Commit and push the release to `main`, then create and push the matching `v<mod_version>` tag:
-
-   ```bash
-   git add gradle.properties CHANGELOG.md
-   ```
-
-   ```bash
-   git commit -m "Release 1.2.3"
-   ```
-
-   ```bash
-   git push origin main
-   ```
+4. Commit and push the release to `main` (with `.sc_active_version` on the [default target](#default-target)), then create and push the matching `v<mod_version>` tag:
 
    ```bash
    git tag -a v1.2.3 -m "Release 1.2.3"

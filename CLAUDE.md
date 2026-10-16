@@ -24,6 +24,7 @@ Ticks — client-side Minecraft mod that renders the sky (sun, moon, stars) at t
 - IDE-only runs prove nothing about loader integration; validate the packaged JAR from `build/libs/<mod_version>/` in a clean client profile (steps in [docs/WORKFLOW.md](docs/WORKFLOW.md)).
 - Every JAR must register its mixin config (`ticks.mixins.json` for Fabric and NeoForge, `ticks.forge.mixins.json` + refmap for Forge), and loader-specific classes must be absent from the other loaders' JARs. A missing registration makes the mod load while every injection silently does nothing.
 - Build commands differ per OS (`.\gradlew.bat` on Windows, `./gradlew` on macOS/Linux); take them from [docs/WORKFLOW.md](docs/WORKFLOW.md) rather than guessing.
+- The default Stonecutter target (`vcsVersion` in `settings.gradle.kts` and the committed `.sc_active_version`) is always the latest Minecraft version, Fabric build: currently `26.3-fabric`. Switch `.sc_active_version` only temporarily and restore it before committing; move both when a new version is ported ([docs/WORKFLOW.md](docs/WORKFLOW.md#default-target)).
 - Conditional-source syntax in this repo is **not** stock Stonecutter: a custom preprocessor handles it (see [Conditional sources](#conditional-sources)). Do not write `if` / `else` forms.
 
 ## Structure
@@ -106,7 +107,7 @@ Imperative, title-case commit subjects (for example `Add Minecraft 26.2 support`
 
 ## Porting to a new Minecraft version
 
-Add the two targets in `settings.gradle.kts` (loader versions in `gradle.properties` and the per-loader build script) and fix API differences with narrow conditions — never a new long-lived branch. The checklist, the baseline API table, and the notes from every earlier port are in [docs/VERSION_NOTES.md](docs/VERSION_NOTES.md); fill its entry for the new version as you go. Start with the frame hook and sky-render mixins, then the time-update hook.
+Add the two targets in `settings.gradle.kts` (loader versions in `gradle.properties` and the per-loader build script) and fix API differences with narrow conditions — never a new long-lived branch. The checklist, the baseline API table, and the notes from every earlier port are in [docs/VERSION_NOTES.md](docs/VERSION_NOTES.md); fill its entry for the new version as you go. Move the default target to the new version's Fabric target. Start with the frame hook and sky-render mixins, then the time-update hook.
 
 ## Common issues
 

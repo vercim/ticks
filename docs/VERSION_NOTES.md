@@ -69,6 +69,8 @@ Mixin class source for each column is in `src/main/java/dev/vercim/ticks/mixin/`
 For each new version, after adding the targets:
 
 - [ ] Add the targets to `settings.gradle.kts`; add the NeoForge (and Forge) version property and the `when` branches in the loader build scripts (`neoForgeVersion`, `javaVersion`, the mixin placeholder expansion).
+- [ ] Extend the explicit version lists, which fall back to the old behavior for an unknown version: `fabricLoaderMinVersion` in `build.fabric.gradle.kts` and `modIcon` in `build.neoforge.gradle.kts` (both name `26.2` / `26.3` literally).
+- [ ] Move the default target (`vcsVersion` in `settings.gradle.kts` and `.sc_active_version`) to the new version's Fabric target, and the **default target** mark below to its entry.
 - [ ] Frame hook: is `GameRenderer.render` still the right place, or has sky extraction moved (as in 1.21.11)?
 - [ ] Sky angle: `DimensionType.timeOfDay`, `SkyRenderState` fields and their package, `SkyRenderer.extractRenderState` signature.
 - [ ] Time update hook: `ClientLevel.setDayTime` / `setTimeFromServer` / the clock manager; confirm jumps (`/time set`) are detected.
