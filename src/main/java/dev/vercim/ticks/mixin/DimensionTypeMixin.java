@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(DimensionType.class)
 abstract class DimensionTypeMixin {
-	//? <1.21.11 {
+	//? if <1.21.11 {
 	/*
 	@Inject(method = "timeOfDay", at = @At("HEAD"), cancellable = true)
 	private void ticks$useFractionalTime(long dayTime, CallbackInfoReturnable<Float> callbackInfo) {

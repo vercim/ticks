@@ -1,7 +1,7 @@
 package dev.vercim.ticks.mixin;
 
-//? >=26 {
-/*import dev.vercim.ticks.TicksController;
+//? if >=26 {
+import dev.vercim.ticks.TicksController;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.state.level.SkyRenderState;
@@ -32,4 +32,4 @@ abstract class SkyRenderer26Mixin {
 		TicksController.endFrame();
 	}
 }
-*///?}
+//?}

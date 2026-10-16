@@ -1,7 +1,7 @@
 package dev.vercim.ticks.mixin;
 
-//? >=26 {
-/*import java.util.Map;
+//? if >=26 {
+import java.util.Map;
 
 import dev.vercim.ticks.TicksController;
 import net.minecraft.client.ClientClockManager;
@@ -38,4 +38,4 @@ abstract class ClientClockManagerMixin {
 		TicksController.onGameTimeUpdate(level, gameTime);
 	}
 }
-*///?}
+//?}

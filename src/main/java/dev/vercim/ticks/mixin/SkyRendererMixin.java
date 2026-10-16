@@ -1,7 +1,7 @@
 package dev.vercim.ticks.mixin;
 
-//? >=1.21.11 {
-//? <26 {
+//? if >=1.21.11 {
+//? if <26 {
 /*import dev.vercim.ticks.TicksController;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;

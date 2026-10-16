@@ -21,10 +21,6 @@ val fabricLoaderMinVersion = when {
 val releaseType = providers.gradleProperty("release_type").orElse("release").get()
 val displayVersion = (project.property("mod_version") as String).substringBefore('-')
 
-extra["ticksMinecraftVersion"] = minecraftVersion
-extra["ticksPlatform"] = "fabric"
-apply(from = rootProject.file("gradle/preprocess-sources.gradle.kts"))
-
 group = project.property("mod_group") as String
 version = "${project.property("mod_version")}+$minecraftVersion-fabric"
 base.archivesName = "ticks"

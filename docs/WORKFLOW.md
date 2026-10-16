@@ -21,13 +21,14 @@ The matrix is declared once in [`settings.gradle.kts`](../settings.gradle.kts); 
 
 The default Stonecutter target is always the **latest Minecraft version**, Fabric build: currently `26.3-fabric`. It lives in two places that must stay equal: `vcsVersion` in [`settings.gradle.kts`](../settings.gradle.kts) and the committed `.sc_active_version`.
 
-- Switching `.sc_active_version` to another target for local work is fine, but restore the default before committing: `.sc_active_version` must not appear in the diff.
-- When a new Minecraft version is added, move both to its Fabric target in the same change.
+- The committed `src/` is in the default target's state (the active target compiles straight from `src/`, see [Conditional sources](#conditional-sources)).
+- Switching to another target for local work is fine (`Set active project to <target>` rewrites `src/` for it), but restore the default before committing with `Reset active project`: neither `.sc_active_version` nor any file under `src/` may carry another target's state in the diff.
+- When a new Minecraft version is added, move both to its Fabric target in the same change and run `Set active project to <new target>` so `src/` follows.
 
 ## Requirements
 
 - JDK 25+ to launch Gradle (Fabric Loom 1.18 refuses to load on anything older). The Java 17, 21, and 25 toolchains that compile the targets are provisioned automatically (Foojay resolver); CI installs all three explicitly.
-- Windows: PowerShell, use `.\gradlew.bat`. Always pass `-Path` and `-Value` by name to `Set-Content`: in Windows PowerShell 5.1 the positional form swaps them and creates a junk file named after the target.
+- Windows: PowerShell, use `.\gradlew.bat`.
 - macOS / Linux: use `./gradlew`. If it is not executable:
 
   ```bash
@@ -52,10 +53,16 @@ Each command is in its own block so it can be copied on its own.
 
 ### Windows (PowerShell)
 
-Select the active target (any target name from the matrix instead of `26.3-fabric`, the [default target](#default-target)):
+Select the active target (any target name from the matrix instead of `1.21.1-fabric`; this rewrites the version- and loader-specific source blocks for it):
 
 ```powershell
-Set-Content -NoNewline -Path .sc_active_version -Value "26.3-fabric"
+.\gradlew.bat "Set active project to 1.21.1-fabric"
+```
+
+Back to the [default target](#default-target), before committing:
+
+```powershell
+.\gradlew.bat "Reset active project"
 ```
 
 ```powershell
@@ -86,10 +93,16 @@ Test one target:
 
 ### macOS / Linux
 
-Select the active target (any target name from the matrix instead of `26.3-fabric`, the [default target](#default-target)):
+Select the active target (any target name from the matrix instead of `1.21.1-fabric`; this rewrites the version- and loader-specific source blocks for it):
 
 ```bash
-printf '26.3-fabric' > .sc_active_version
+./gradlew "Set active project to 1.21.1-fabric"
+```
+
+Back to the [default target](#default-target), before committing:
+
+```bash
+./gradlew "Reset active project"
 ```
 
 ```bash
@@ -122,6 +135,9 @@ Test one target:
 
 | Task | What it does |
 |---|---|
+| `Set active project to <target>` | Makes the target active: updates `.sc_active_version` and rewrites the conditional blocks in `src/` for it |
+| `Reset active project` | Back to the [default target](#default-target); run it before committing |
+| `Refresh active project` | Re-runs the comment processor on the active target; fixes blocks left in a wrong state |
 | `runActiveClient` | Runs the client of the active target (Fabric targets also load Mod Menu, development only) |
 | `buildActive` | Builds the active target |
 | `build` | Builds and tests every target (what CI runs) |
@@ -138,24 +154,23 @@ Outputs: collected release JARs are in `build/libs/<mod_version>/` (for example 
 
 ## Conditional sources
 
-Version- and loader-specific code lives in the shared tree inside condition blocks. The blocks are processed by [`gradle/preprocess-sources.gradle.kts`](../gradle/preprocess-sources.gradle.kts), which every loader build script applies: it writes the result for the target to `versions/<target>/build/generated/sources/ticks/main`, and that is the only tree that gets compiled. The files under `src/` are never compiled directly, so what they look like for a given target in an editor does not matter to the build.
+Shared code is ordinary Java. Version- and loader-specific code uses [Stonecutter](https://stonecutter.kikugie.dev/) conditions; the code of a block that is not active for the file's target appears commented out in the source tree. The committed tree is in the [default target](#default-target)'s state (`26.3`):
 
 ```java
-//? >=26 {
-/*return level.getOverworldClockTime();
-*///?}
-//? <26 {
-return level.getDayTime();
+//? if >=26 {
+return level.getOverworldClockTime();
 //?}
+//? if <26 {
+/*return level.getDayTime();
+*///?}
 ```
 
-Rules enforced by the preprocessor:
-
-- A block opens with `//? <condition> {` on its own line and closes with `//?}` or `*///?}`.
-- A condition is one of `fabric`, `forge`, `neoforge` (the target's loader), `>=X.Y.Z` (target Minecraft version at least X.Y.Z), or `<X.Y.Z` (target Minecraft version below X.Y.Z). Nested blocks are combined with AND.
-- There is no `else` and no `if`: write two sibling blocks with complementary conditions.
-- Inactive code is kept commented as `/* … *///?}`. The preprocessor removes the leading `/*` from every kept line that starts with `/*` (but not `/**`), inside a block or not, so a block may be stored commented-out; never start an ordinary comment line with `/*`.
-- If a whole class is loader- or version-specific, keep its `package` declaration outside the block so the other targets generate an empty source file (see `forge/TicksForge.java`, `mixin/SkyRendererMixin.java`).
+- A block opens with `//? if <condition> {` on its own line and closes with `//?}`. Stonecutter wraps inactive code as `/* … *///?}` itself; do not comment it out by hand.
+- A condition is a loader constant (`fabric`, `forge`, `neoforge`, declared in [`stonecutter.gradle.kts`](../stonecutter.gradle.kts)) or a predicate on the target's Minecraft version (`>=1.21.4`, `<26`). Combine them with `&&` and `||` (`//? if neoforge && >=1.21.4 {`) and chain alternatives with `//?} else if … {` and `//?} else {`. Nested blocks must both hold.
+- The active target (`.sc_active_version`) compiles straight from `src/`, so its sources must be in its own state. `Set active project to <target>` rewrites them; editing `.sc_active_version` by hand does not (run `Refresh active project` afterwards), and a plain `gradlew :<target>:runClient` never does. Every other target compiles a generated copy, `versions/<target>/build/generated/stonecutter/main/java` (the `stonecutterGenerate` task), which is never edited.
+- Write new code in the form the committed version shows: a block that is inactive for `26.3` is stored commented out, and the next `Set active project to <target>` flips it as needed.
+- Use `//` comments inside a conditional block: Java has no nested block comments, so a `/* … */` or Javadoc comment inside an inactive block would end the wrapping comment early.
+- If a whole class is loader- or version-specific, keep its `package` declaration outside the block so the other targets generate a valid, otherwise empty source file (see `fabric/TicksFabric.java`, `forge/TicksForge.java`, `mixin/SkyRendererMixin.java`).
 
 Keep conditions as narrow as practical. Minecraft-version differences are expressed the same way, next to the affected code ([VERSION_NOTES.md](VERSION_NOTES.md)). Mixin classes that only exist for some versions are also listed through the `${sky_renderer_mixin}` / `${clock_manager_mixin}` placeholders in `ticks.mixins.json`, which each loader build script fills in; update both places when a version-specific mixin is added.
 
@@ -172,7 +187,7 @@ Documentation-only changes (including `docs/`, `README.md`, `CHANGELOG.md`, `CLA
 A change is ready to merge when:
 
 - every target compiles, passes its tests, and produces its release JAR;
-- `.sc_active_version` and `vcsVersion` name the latest target (see [Default target](#default-target));
+- `.sc_active_version` and `vcsVersion` name the latest target and `src/` is in its state (see [Default target](#default-target));
 - each JAR contains and registers its mixin config (see below);
 - loader-specific classes do not leak into the other loaders' JARs;
 - behavior stays compatible with the previous release.
@@ -219,7 +234,7 @@ Use a clean client profile each time, and record the outcome in the target's `Ve
    ```
 
 3. Validate the packaged JARs (see above).
-4. Commit and push the release to `main` (with `.sc_active_version` on the [default target](#default-target)), then create and push the matching `v<mod_version>` tag:
+4. Commit and push the release to `main` (with the [default target](#default-target) active: `Reset active project`), then create and push the matching `v<mod_version>` tag:
 
    ```bash
    git tag v<mod_version>
@@ -255,7 +270,7 @@ It needs the repository variables `MODRINTH_PROJECT_ID` and `CURSEFORGE_PROJECT_
 - **"Dependency requires at least JVM runtime version 25"** → Gradle was launched with an older JDK; launch it with JDK 25+ (`JAVA_HOME`, or `setup-java` in CI).
 - **"No matching toolchain found"** → the Foojay resolver could not download the JDK (offline or blocked); install JDK 17, 21, and 25 locally.
 - **Transparent world in dev** → Gradle is using the wrong JDK; use the Java toolchain of the target.
-- **"Cannot find symbol" in a generated target** → look at the processed file in `versions/<target>/build/generated/sources/ticks/main` to see which conditional blocks were kept; remember that conditions have no `else`.
-- **Editor shows errors on commented-out code** → expected; the editor sees the unprocessed tree. Build the target to check.
-- **Wrong client runs** → update `.sc_active_version` and use `runActiveClient`.
+- **"Cannot find symbol" for classes of another Minecraft version (for example `GameRules`, or `getDayTime()` on a 26.x target)** → the active target compiled sources that are not in its state, usually because `.sc_active_version` was edited by hand or `:<target>:` tasks were run directly; run `Set active project to <target>` (or `Refresh active project`). For any other target, look at the generated copy in `versions/<target>/build/generated/stonecutter/main/java` to see which conditional blocks were kept.
+- **Editor shows errors on commented-out code** → expected: the editor shows the active target's sources, and the code of the other versions is commented out. Switch with `Set active project to <target>` to see and edit that version's code.
+- **Wrong client runs** → run `Set active project to <target>`, then `runActiveClient`.
 - **Mod loads but nothing happens in the packaged JAR** → the mixin config is not registered for that loader; inspect the JAR metadata.

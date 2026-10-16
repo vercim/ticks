@@ -9,10 +9,6 @@ val javaVersion = 17
 val releaseType = providers.gradleProperty("release_type").orElse("release").get()
 val displayVersion = (project.property("mod_version") as String).substringBefore('-')
 
-extra["ticksMinecraftVersion"] = minecraftVersion
-extra["ticksPlatform"] = "forge"
-apply(from = rootProject.file("gradle/preprocess-sources.gradle.kts"))
-
 group = project.property("mod_group") as String
 version = "${project.property("mod_version")}+$minecraftVersion-forge"
 base.archivesName = "ticks"

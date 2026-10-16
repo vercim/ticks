@@ -1,6 +1,6 @@
 package dev.vercim.ticks.forge;
 
-//? forge {
+//? if forge {
 /*import dev.vercim.ticks.TicksConfig;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.loading.FMLPaths;
