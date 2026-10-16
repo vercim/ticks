@@ -86,7 +86,7 @@ Likely trouble spots, in order: the frame/sky hook, the time-update hook, then m
 
 ### MC 26.x — Fabric / NeoForge
 
-Targets: `26.1`, `26.1.2`, `26.2`, `26.3` (each `-fabric` and `-neoforge`) · first tagged version: 1.0.0-beta (`26.3`: 1.0.1) · date: 2026-07-29 (`26.3`: 2026-10-12)
+Targets: `26.1`, `26.1.2`, `26.2`, `26.3` (each `-fabric` and `-neoforge`) · first tagged version: 1.0.0-beta (`26.3`: 1.0.1) · date: 2026-07-29 (`26.3`: 2026-10-12) · **default target (`vcsVersion`): `26.3-fabric`**
 
 - Java 25; unobfuscated Minecraft (no remapping, `isUnobfuscated` in `build.fabric.gradle.kts`).
 - 26.2 and 26.3 need Fabric Loader `>=0.19.0` (`fabric_loader_26_2_min_version`, shared by both in `build.fabric.gradle.kts`).
@@ -113,7 +113,7 @@ Targets: `1.21.4-fabric`, `1.21.4-neoforge` · first tagged version: 0.1.2-alpha
 
 ### MC 1.21.1 — Fabric / NeoForge
 
-Targets: `1.21.1-fabric`, `1.21.1-neoforge` · first tagged version: 0.1.2-alpha · date: 2026-07-27 · **default target (`vcsVersion`)**
+Targets: `1.21.1-fabric`, `1.21.1-neoforge` · first tagged version: 0.1.2-alpha · date: 2026-07-27
 
 - `GameRenderer.render(DeltaTracker, boolean)`; the partial tick must be read from the delta tracker with `getGameTimeDeltaPartialTick(false)`.
 - The client advances game and day time itself every tick (`ClientLevel.tickTime`) through the same `setGameTime` / `setDayTime` the server packet uses, so `ClientLevelMixin` marks `tickTime` to tell the packet apart. NeoForge's custom time payload calls those setters directly and never reaches `ClientPacketListener.handleSetTime`: hook the `ClientLevel` setters, not the packet handler.
