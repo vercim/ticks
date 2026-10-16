@@ -60,7 +60,7 @@ dependencies {
 
 tasks.processResources {
 	val metadata = mapOf(
-		"version" to project.version,
+		"version" to project.property("mod_version"),
 		"mod_id" to project.property("mod_id"),
 		"mod_name" to project.property("mod_name"),
 		"mod_authors" to project.property("mod_authors"),
