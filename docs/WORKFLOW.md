@@ -122,7 +122,7 @@ Test one target:
 
 | Task | What it does |
 |---|---|
-| `runActiveClient` | Runs the client of the active target |
+| `runActiveClient` | Runs the client of the active target (Fabric targets also load Mod Menu, development only) |
 | `buildActive` | Builds the active target |
 | `build` | Builds and tests every target (what CI runs) |
 | `buildAndCollect` | Builds every target and collects release JARs in `build/libs/<mod_version>/` |
