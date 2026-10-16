@@ -7,6 +7,4 @@ build/
 out/
 run/
 .run/
-
-# Stonecutter target projects and their output are generated; Ticks has no per-version source overrides.
 versions/

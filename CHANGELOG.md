@@ -1,4 +1,4 @@
-## [Unreleased]
+## [1.0.2] - 2026-10-16
 
 ### Overall
 - Mod Menu and the NeoForge and Forge mod lists now show the plain mod version (for example `1.0.1`) instead of one with the Minecraft version and loader appended (`1.0.1+26.3-fabric`). JAR file names are unchanged.

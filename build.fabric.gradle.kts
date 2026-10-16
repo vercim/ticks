@@ -36,6 +36,10 @@ java {
 
 repositories {
 	mavenCentral()
+	maven("https://maven.terraformersmc.com/releases/") {
+		name = "TerraformersMC"
+		content { includeGroup("com.terraformersmc") }
+	}
 }
 
 sourceSets["main"].resources.srcDir(rootProject.file("src/fabric/resources"))
@@ -53,6 +57,8 @@ dependencies {
 	minecraft("com.mojang:minecraft:$minecraftVersion")
 	loomx.applyMojangMappings()
 	modImplementation("net.fabricmc:fabric-loader:$fabricLoaderVersion")
+	// Development-only: shows the mod in the dev client's mod list; never reaches the compile classpath or the JAR.
+	modLocalRuntime("com.terraformersmc:modmenu:${project.property("modmenu_version_" + minecraftVersion.replace('.', '_'))}")
 
 	testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
 	testImplementation("com.google.code.gson:gson:2.10.1")
