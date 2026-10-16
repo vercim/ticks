@@ -3,8 +3,8 @@ package dev.vercim.ticks;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 //? if <1.21.4 {
-/*
-import net.minecraft.world.level.GameRules;
+
+/*import net.minecraft.world.level.GameRules;
 *///?}
 import net.minecraft.world.level.dimension.DimensionType;
 
