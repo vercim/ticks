@@ -10,6 +10,13 @@
     "sources": "${mod_sources}",
     "issues": "${mod_issues}"
   },
+  "custom": {
+    "modmenu": {
+      "links": {
+        "modmenu.discord": "${mod_discord}"
+      }
+    }
+  },
   "license": "${mod_license}",
   "icon": "assets/ticks/icon.png",
   "environment": "client",

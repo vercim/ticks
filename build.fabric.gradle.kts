@@ -76,6 +76,7 @@ tasks.processResources {
 		"mod_homepage" to project.property("mod_homepage"),
 		"mod_sources" to project.property("mod_sources"),
 		"mod_issues" to project.property("mod_issues"),
+		"mod_discord" to project.property("mod_discord"),
 		"minecraft_version" to minecraftVersion,
 		"fabric_loader_min_version" to fabricLoaderMinVersion,
 		"java_version" to javaVersion
