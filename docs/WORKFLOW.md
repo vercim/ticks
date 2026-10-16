@@ -21,36 +21,129 @@ The matrix is declared once in [`settings.gradle.kts`](../settings.gradle.kts); 
 
 - JDK 25+ to launch Gradle (Fabric Loom 1.18 refuses to load on anything older). The Java 17, 21, and 25 toolchains that compile the targets are provisioned automatically (Foojay resolver); CI installs all three explicitly.
 - Windows: PowerShell, use `.\gradlew.bat`. Always pass `-Path` and `-Value` by name to `Set-Content`: in Windows PowerShell 5.1 the positional form swaps them and creates a junk file named after the target.
-- macOS / Linux: use `./gradlew` (run `chmod +x gradlew` if it is not executable).
-- To force a specific launcher JDK: macOS `export JAVA_HOME=$(/usr/libexec/java_home -v 25)`, Windows `$env:JAVA_HOME = "C:\path\to\jdk-25"`.
+- macOS / Linux: use `./gradlew`. If it is not executable:
+
+  ```bash
+  chmod +x gradlew
+  ```
+
+- To force a specific launcher JDK, set `JAVA_HOME` before running Gradle. macOS:
+
+  ```bash
+  export JAVA_HOME=$(/usr/libexec/java_home -v 25)
+  ```
+
+  Windows:
+
+  ```powershell
+  $env:JAVA_HOME = "C:\path\to\jdk-25"
+  ```
 
 ## Commands
 
-Windows (PowerShell):
+Each command is in its own block so it can be copied on its own.
+
+### Windows (PowerShell)
+
+Select the active target (any target name from the matrix instead of `1.21.1-fabric`):
 
 ```powershell
-Set-Content -NoNewline -Path .sc_active_version -Value "1.21.1-fabric"   # any target name from the matrix
+Set-Content -NoNewline -Path .sc_active_version -Value "1.21.1-fabric"
+```
+
+Run the client of the active target:
+
+```powershell
 .\gradlew.bat runActiveClient
+```
+
+Build the active target:
+
+```powershell
 .\gradlew.bat buildActive
+```
+
+Build and test every target:
+
+```powershell
 .\gradlew.bat build
+```
+
+Build every target and collect the release JARs:
+
+```powershell
 .\gradlew.bat buildAndCollect
+```
+
+Fresh full build (release verification only):
+
+```powershell
 .\gradlew.bat clean buildAndCollect
+```
+
+Build one target:
+
+```powershell
 .\gradlew.bat :1.21.1-neoforge:build
+```
+
+Test one target:
+
+```powershell
 .\gradlew.bat :1.21.1-fabric:test
 ```
 
-macOS / Linux:
+### macOS / Linux
+
+Select the active target (any target name from the matrix instead of `1.21.1-fabric`):
 
 ```bash
-printf '1.21.1-fabric' > .sc_active_version   # any target name from the matrix
+printf '1.21.1-fabric' > .sc_active_version
+```
+
+Run the client of the active target:
+
+```bash
 ./gradlew runActiveClient
+```
+
+Build the active target:
+
+```bash
 ./gradlew buildActive
+```
+
+Build and test every target:
+
+```bash
 ./gradlew build
+```
+
+Build every target and collect the release JARs:
+
+```bash
 ./gradlew buildAndCollect
+```
+
+Fresh full build (release verification only):
+
+```bash
 ./gradlew clean buildAndCollect
+```
+
+Build one target:
+
+```bash
 ./gradlew :1.21.1-neoforge:build
+```
+
+Test one target:
+
+```bash
 ./gradlew :1.21.1-fabric:test
 ```
+
+### Tasks
 
 | Task | What it does |
 |---|---|
@@ -66,7 +159,7 @@ Unqualified task names are run by Gradle in every target project, so there is no
 
 Do not use `clean` routinely: it discards Gradle and Minecraft preparation work.
 
-Outputs: collected release JARs are in `build/libs/<mod_version>/` (for example `ticks-1.0.0-beta+1.21.1-fabric.jar`); per-target output is in `versions/<target>/build/libs/` (`-sources` JARs are not published).
+Outputs: collected release JARs are in `build/libs/<mod_version>/` (for example `ticks-1.0.0-beta+1.21.1-fabric.jar`); per-target output is in `versions/<target>/build/libs/` (`-sources` JARs are not published). The version written into the mod metadata (and shown in Mod Menu and the NeoForge/Forge mod lists) is the plain `mod_version`, for example `1.0.0-beta`; only the JAR file name carries the `+<Minecraft version>-<loader>` suffix.
 
 ## Conditional sources
 
@@ -143,9 +236,21 @@ Use a clean client profile each time, and record the outcome in the target's `Ve
 
    ```bash
    git add gradle.properties CHANGELOG.md
+   ```
+
+   ```bash
    git commit -m "Release 1.2.3"
+   ```
+
+   ```bash
    git push origin main
+   ```
+
+   ```bash
    git tag -a v1.2.3 -m "Release 1.2.3"
+   ```
+
+   ```bash
    git push origin v1.2.3
    ```
 
