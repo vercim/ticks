@@ -16,6 +16,7 @@ Ticks — client-side Minecraft mod that renders the sky (sun, moon, stars) at t
 
 - Version `1.0.2` (earlier: `1.0.1`, `1.0.0-beta`, `0.1.2-alpha`).
 - Targets (declared once in `settings.gradle.kts`): `1.20.1-fabric`, `1.20.1-forge`, and `-fabric` / `-neoforge` for `1.21.1`, `1.21.4`, `1.21.11`, `26.1`, `26.1.2`, `26.2`, `26.3`. Per-target details: [docs/VERSION_NOTES.md](docs/VERSION_NOTES.md). Never add long-lived version branches.
+- `vcsVersion = 26.3-fabric` (the newest target): commit with `.sc_active_version` set to `26.3-fabric` and `src/` in its state. When a newer target is added, move `vcsVersion` to it.
 - README texts and images are shared with the Modrinth and CurseForge pages; keep README edits minimal and user-facing.
 
 ## Rules that must not be forgotten
@@ -78,6 +79,13 @@ Keep `SkyTimeMath` and `SkyTimeInterpolator` free of Minecraft classes so they s
 
 Version- and loader-specific code uses Stonecutter conditions, `//? if <condition> {` … `//?}`; the code of an inactive block is commented out as `/* … *///?}`. A condition is a loader constant (`fabric`, `forge`, `neoforge`, defined in `stonecutter.gradle.kts`) or a Minecraft version predicate (`>=1.21.4`, `<26`), and may use `else`, `else if`, and `&&`. The active target (`.sc_active_version`) compiles straight from `src/`, every other target from a generated copy under `versions/<target>/build/generated/stonecutter`, so the committed tree always shows the default target's state. Details and examples: [docs/WORKFLOW.md](docs/WORKFLOW.md#conditional-sources). Express Minecraft-version differences with narrow local conditions, never by copying files.
 
+## Loader integration
+
+- **Mixins:** Fabric registers `ticks.mixins.json` in `fabric.mod.json` (`"mixins"`); NeoForge needs `[[mixins]]` in `META-INF/neoforge.mods.toml`; Forge 1.20.1 registers `ticks.forge.mixins.json` through `[[mixins]]` in `META-INF/mods.toml` and the `MixinConfigs` manifest attribute, and needs the `ticks.forge.refmap.json` the Forge build adds (SRG names at runtime).
+- **Entry points:** each loader calls `TicksConfig.initialize(configDir)` with its own config directory; there is no config screen, so no mod-list integration beyond metadata.
+- **Fabric dev client:** also loads Fabric API and Mod Menu (development only, not in the JAR); details in [docs/VERSION_NOTES.md](docs/VERSION_NOTES.md).
+- **Plugins:** before changing the Gradle wrapper or a build plugin, check that Stonecutter, Loom Back Compat, Fabric Loom, and NeoForge ModDev still work together.
+
 ## Config
 
 `config/ticks.json` holds one key, `transitionTimeMillis` (default 200, range 0–2000, clamped on load and on set). The file is created on first start; unreadable or malformed files fall back to the default with a log warning. There is no config screen and no versioning: keep the file name and key stable, and add new keys with defaults so older files keep loading. The mod has no user-visible text, so no language files exist.
@@ -106,7 +114,7 @@ Imperative, title-case commit subjects (for example `Add Minecraft 26.2 support`
 
 ## Porting to a new Minecraft version
 
-Add the two targets in `settings.gradle.kts` (loader versions in `gradle.properties` and the per-loader build script) and fix API differences with narrow conditions — never a new long-lived branch. The checklist, the baseline API table, and the notes from every earlier port are in [docs/VERSION_NOTES.md](docs/VERSION_NOTES.md); fill its entry for the new version as you go. Move the default target to the new version's Fabric target. Start with the frame hook and sky-render mixins, then the time-update hook.
+Add the two targets in `settings.gradle.kts` (loader versions in `gradle.properties` and the per-loader build script) and fix API differences with narrow conditions — never a new long-lived branch. The checklist, the baseline API table, and the notes from every earlier port are in [docs/VERSION_NOTES.md](docs/VERSION_NOTES.md); fill its entry for the new version as you go. Move the default target to the new version's Fabric target (`vcsVersion`, `.sc_active_version`, then `Set active project to <target>` so `src/` follows). Start with the frame hook and sky-render mixins, then the time-update hook.
 
 ## Common issues
 
