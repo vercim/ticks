@@ -222,11 +222,11 @@ Use a clean client profile each time, and record the outcome in the target's `Ve
 4. Commit and push the release to `main` (with `.sc_active_version` on the [default target](#default-target)), then create and push the matching `v<mod_version>` tag:
 
    ```bash
-   git tag -a v1.2.3 -m "Release 1.2.3"
+   git tag -a v<mod_version>
    ```
 
    ```bash
-   git push origin v1.2.3
+   git push origin v<mod_version>
    ```
 
    The tag must be exactly `v<mod_version>`, including any `-alpha` or `-beta` suffix.
