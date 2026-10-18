@@ -1,4 +1,4 @@
-## [Unreleased]
+## [1.1.0] - 2026-10-18
 
 ### Overall
 - New mod icon.

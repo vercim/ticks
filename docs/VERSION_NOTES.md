@@ -171,7 +171,7 @@ Targets: `1.21.1-fabric`, `1.21.1-neoforge` · first mod version: 0.1.2-alpha ·
 
 ### MC 1.21 — Fabric / NeoForge
 
-Targets: `1.21-fabric`, `1.21-neoforge` · first mod version: unreleased · date: 2026-10-18
+Targets: `1.21-fabric`, `1.21-neoforge` · first mod version: 1.1.0 · date: 2026-10-18
 
 #### Dependencies
 - NeoForge `21.0.167` (the last 21.0 build); Fabric API `0.102.0+1.21` and Mod Menu `11.0.3` for the dev client.
