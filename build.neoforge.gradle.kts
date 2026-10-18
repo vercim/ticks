@@ -7,6 +7,7 @@ plugins {
 group = project.property("mod_group") as String
 val minecraftVersion = stonecutter.current.version.substringBeforeLast('-')
 val neoForgeVersion = when (minecraftVersion) {
+	"1.21" -> project.property("neoforge_1_21_version") as String
 	"1.21.1" -> project.property("neoforge_version") as String
 	"1.21.4" -> project.property("neoforge_1_21_4_version") as String
 	"1.21.11" -> project.property("neoforge_1_21_11_version") as String
@@ -17,6 +18,8 @@ val neoForgeVersion = when (minecraftVersion) {
 	else -> error("No NeoForge version is configured for Minecraft $minecraftVersion")
 }
 val minecraftVersionUpperBound = minecraftVersion.split(".").toMutableList().let { parts ->
+	// "1.21" is 1.21.0: its bound is 1.21.1, not 1.22.
+	if (parts[0] == "1" && parts.size == 2) parts.add("0")
 	parts[parts.lastIndex] = (parts.last().toInt() + 1).toString()
 	parts.joinToString(".")
 }

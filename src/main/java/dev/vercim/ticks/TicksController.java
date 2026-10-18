@@ -111,19 +111,19 @@ public final class TicksController {
 	}
 
 	private static boolean runsNormally(ClientLevel level) {
-		//? if >=1.21.1 {
+		//? if >=1.21 {
 		return level.tickRateManager().runsNormally();
 		//?}
-		//? if <1.21.1 {
+		//? if <1.21 {
 		/*return true;
 		*///?}
 	}
 
 	private static double getTickRate(ClientLevel level) {
-		//? if >=1.21.1 {
+		//? if >=1.21 {
 		return level.tickRateManager().tickrate();
 		//?}
-		//? if <1.21.1 {
+		//? if <1.21 {
 		/*return 20.0;
 		*///?}
 	}

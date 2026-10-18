@@ -10,8 +10,8 @@ Ticks uses one [Stonecutter](https://stonecutter.kikugie.dev/) repository: a sin
 |---|---|---:|
 | `1.20.1-fabric` | Fabric | 17 |
 | `1.20.1-forge` | Forge | 17 |
-| `1.21.1-fabric`, `1.21.4-fabric`, `1.21.11-fabric` | Fabric | 21 |
-| `1.21.1-neoforge`, `1.21.4-neoforge`, `1.21.11-neoforge` | NeoForge | 21 |
+| `1.21-fabric`, `1.21.1-fabric`, `1.21.4-fabric`, `1.21.11-fabric` | Fabric | 21 |
+| `1.21-neoforge`, `1.21.1-neoforge`, `1.21.4-neoforge`, `1.21.11-neoforge` | NeoForge | 21 |
 | `26.1-fabric`, `26.1.2-fabric`, `26.2-fabric`, `26.3-fabric` | Fabric | 25 |
 | `26.1-neoforge`, `26.1.2-neoforge`, `26.2-neoforge`, `26.3-neoforge` | NeoForge | 25 |
 
@@ -197,10 +197,10 @@ A change is ready to merge when:
 IDE runs are not enough for loader or Mixin changes. Before releasing (and after any change to mixins, metadata, or the build scripts):
 
 - inspect each JAR you ship: the mixin config is present and registered (`ticks.mixins.json` in `fabric.mod.json` / `neoforge.mods.toml`; `ticks.forge.mixins.json`, `ticks.forge.refmap.json`, and the `MixinConfigs` manifest entry on Forge), and no class from another loader's package is inside;
-- launch at least one JAR per loader and per Minecraft *generation* (`1.20.1`, `1.21.1`/`1.21.4`, `1.21.11`, `26.x`) in a clean client profile, since the hooks differ per generation;
+- launch at least one JAR per loader and per Minecraft *generation* (`1.20.1`, `1.21`/`1.21.1`/`1.21.4`, `1.21.11`, `26.x`) in a clean client profile, since the hooks differ per generation;
 - verify `config/ticks.json` is created with `transitionTimeMillis` and that changing it takes effect after a restart;
 - watch the sun/moon at high FPS: motion must be smooth between ticks, `/time set` and `/time add` must blend instead of snapping or spinning the wrong way, and the sky must not drift while the game is paused;
-- on every version with `/tick` (1.21.1 and newer) test `/tick freeze` and `/tick rate`: the sky must stop on freeze, speed up within a second at `/tick rate 100`, and at a rate the machine cannot sustain (for example `/tick rate 10000`) keep pace with the daytime the world really reaches (compare with `/time query daytime`) instead of racing ahead; a lagging server must not make the sky run ahead and jump back;
+- on every version with `/tick` (1.21 and newer) test `/tick freeze` and `/tick rate`: the sky must stop on freeze, speed up within a second at `/tick rate 100`, and at a rate the machine cannot sustain (for example `/tick rate 10000`) keep pace with the daytime the world really reaches (compare with `/time query daytime`) instead of racing ahead; a lagging server must not make the sky run ahead and jump back;
 - confirm nothing changes in the Nether and the End (fixed-time dimensions) and that world time and server behavior are unaffected.
 
 Use a clean client profile each time, and record the outcome in the target's `Verified` line in [VERSION_NOTES.md](VERSION_NOTES.md). Shaders are not supported.
@@ -221,7 +221,7 @@ Use a clean client profile each time, and record the outcome in the target's `Ve
    - stable: `1.2.3`
    - beta: `1.2.3-beta` (or `1.2.3-beta.1`)
    - alpha: `1.2.3-alpha` (or `1.2.3-alpha.1`)
-2. Run a fresh full build; the sixteen JARs are collected in `build/libs/<mod_version>/`. Windows:
+2. Run a fresh full build; one JAR per target is collected in `build/libs/<mod_version>/`. Windows:
 
    ```powershell
    .\gradlew.bat clean buildAndCollect

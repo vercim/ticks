@@ -21,6 +21,8 @@ stonecutter {
 	create(rootProject) {
 		version("1.20.1-fabric", "1.20.1").buildscript = "build.fabric.gradle.kts"
 		version("1.20.1-forge", "1.20.1").buildscript = "build.forge.gradle.kts"
+		version("1.21-fabric", "1.21").buildscript = "build.fabric.gradle.kts"
+		version("1.21-neoforge", "1.21").buildscript = "build.neoforge.gradle.kts"
 		version("1.21.1-fabric", "1.21.1").buildscript = "build.fabric.gradle.kts"
 		version("1.21.1-neoforge", "1.21.1").buildscript = "build.neoforge.gradle.kts"
 		version("1.21.4-fabric", "1.21.4").buildscript = "build.fabric.gradle.kts"

@@ -1,3 +1,8 @@
+## [Unreleased]
+
+### Compatibility
+- Added Minecraft 1.21 support for Fabric and NeoForge.
+
 ## [1.0.2] - 2026-10-16
 
 ### Overall

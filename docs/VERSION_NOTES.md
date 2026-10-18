@@ -55,7 +55,8 @@ Values come from `gradle.properties` and the loader build scripts; copy, do not 
 | Minecraft | Java | Fabric Loader (dev / min) | NeoForge / Forge (dev) |
 |---|---:|---|---|
 | 1.20.1 | 17 | `0.15.11` / `0.14.21` (pinned in `build.fabric.gradle.kts`) | Forge `1.20.1-47.4.26` (`forge_loader_version_range=[47,)`) |
-| 1.21.1 | 21 | `fabric_loader_version` / `fabric_loader_min_version` | `neoforge_version=21.1.259` |
+| 1.21 | 21 | `fabric_loader_version` / `fabric_loader_min_version` | `neoforge_1_21_version=21.0.167` |
+| 1.21.1 | 21 | same | `neoforge_version=21.1.259` |
 | 1.21.4 | 21 | same | `neoforge_1_21_4_version=21.4.158` |
 | 1.21.11 | 21 | same | `neoforge_1_21_11_version=21.11.45` |
 | 26.1 | 25 | same | `neoforge_26_1_version=26.1.0.19-beta` |
@@ -65,25 +66,25 @@ Values come from `gradle.properties` and the loader build scripts; copy, do not 
 
 Current common values: `fabric_loader_version=0.19.5`, `fabric_loader_min_version=0.16.10`, `neoforge_loader_version_range=[4,)`. Ticks has no mod dependencies beyond the loader.
 
-Fabric dev clients additionally load Fabric API and Mod Menu through `modLocalRuntime` (`build.fabric.gradle.kts`), so the mod list can be checked without installing anything; neither is on the compile classpath or in the JAR. Versions are in `gradle.properties` as `modmenu_version_<minecraft version with _>` and `fabric_api_version_<minecraft version with _>`; a new Minecraft version needs both entries, or the Fabric build fails with a missing property. Mod Menu versions: `7.2.2` (1.20.1), `11.0.5` (1.21.1), `13.0.4` (1.21.4), `17.0.1` (1.21.11), `18.0.2` (26.1, 26.1.2), `20.0.3` (26.2), `21.0.0` (26.3).
+Fabric dev clients additionally load Fabric API and Mod Menu through `modLocalRuntime` (`build.fabric.gradle.kts`), so the mod list can be checked without installing anything; neither is on the compile classpath or in the JAR. Versions are in `gradle.properties` as `modmenu_version_<minecraft version with _>` and `fabric_api_version_<minecraft version with _>`; a new Minecraft version needs both entries, or the Fabric build fails with a missing property. Mod Menu versions: `7.2.2` (1.20.1), `11.0.3` (1.21), `11.0.5` (1.21.1), `13.0.4` (1.21.4), `17.0.1` (1.21.11), `18.0.2` (26.1, 26.1.2), `20.0.3` (26.2), `21.0.0` (26.3).
 
-Fabric API is needed because Mod Menu requires some of its modules and Loom removes the ones nested in the Mod Menu JAR; the POMs of Mod Menu 11.0.5, 13.0.4, and 17.0.1 do not declare them either, so Gradle would not pull them in (the client then stops with "Incompatible mods found"). NeoForge and Forge have a built-in mod list and need nothing.
+Fabric API is needed because Mod Menu requires some of its modules and Loom removes the ones nested in the Mod Menu JAR; the POMs of Mod Menu 11.0.3, 11.0.5, 13.0.4, and 17.0.1 do not declare them either, so Gradle would not pull them in (the client then stops with "Incompatible mods found"). NeoForge and Forge have a built-in mod list and need nothing.
 
 Build tooling versions live in `settings.gradle.kts` (Stonecutter, Loom Back Compat, NeoForge ModDevGradle, Mod Publish Plugin, Foojay) and `gradle/wrapper/gradle-wrapper.properties`. Keep `loomx.loom_version` in `gradle.properties` equal to the `fabric-loom-remap` version in `stonecutter.gradle.kts`. Before bumping any of them, check that Stonecutter, Loom Back Compat, Fabric Loom, and NeoForge ModDev still work together.
 
 Metadata ranges:
 
 - Fabric: `minecraft` is an **exact** match of the target's Minecraft version, `java` is `>=` the target's Java version.
-- NeoForge: Minecraft `[X, X')` where `X'` is the target version with its last component incremented (`26.1.2` → `26.1.3`); NeoForge itself `[neoforge_version,)`.
+- NeoForge: Minecraft `[X, X')` where `X'` is the target version with its last component incremented (`26.1.2` → `26.1.3`; `1.21` counts as `1.21.0` → `1.21.1`); NeoForge itself `[neoforge_version,)`.
 - Forge (1.20.1): Minecraft `[1.20.1,1.20.2)`, Forge `[47,)`.
 
 ## Baseline
 
-Conditions are written relative to the Minecraft version of the target (`>=1.21.4`, `<26`). The behavior of the oldest hook set is the **MC 1.21.1** column below; each later column lists only what changed.
+Conditions are written relative to the Minecraft version of the target (`>=1.21.4`, `<26`). The behavior of the oldest hook set is the **MC 1.21 / 1.21.1** column below; each later column lists only what changed.
 
-| Area | 1.20.1 | 1.21.1 (baseline) | 1.21.4 | 1.21.11 | 26.x |
+| Area | 1.20.1 | 1.21 / 1.21.1 (baseline) | 1.21.4 | 1.21.11 | 26.x |
 |---|---|---|---|---|---|
-| Frame hook | `GameRenderer.render(float partialTick, long nanoTime, boolean tick)` HEAD / RETURN (`GameRendererMixin`, `<1.21.1`) | `GameRenderer.render(DeltaTracker, boolean)`; partial tick from `deltaTracker.getGameTimeDeltaPartialTick(false)` (`>=1.21.1 <1.21.11`) | same | `SkyRenderer.extractRenderState(ClientLevel, float, Camera, SkyRenderState)` HEAD / RETURN (`SkyRendererMixin`) | same, with `SkyRenderState` in `net.minecraft.client.renderer.state.level` (`SkyRenderer26Mixin`) |
+| Frame hook | `GameRenderer.render(float partialTick, long nanoTime, boolean tick)` HEAD / RETURN (`GameRendererMixin`, `<1.21`) | `GameRenderer.render(DeltaTracker, boolean)`; partial tick from `deltaTracker.getGameTimeDeltaPartialTick(false)` (`>=1.21 <1.21.11`) | same | `SkyRenderer.extractRenderState(ClientLevel, float, Camera, SkyRenderState)` HEAD / RETURN (`SkyRendererMixin`) | same, with `SkyRenderState` in `net.minecraft.client.renderer.state.level` (`SkyRenderer26Mixin`) |
 | Sky angle | `DimensionType.timeOfDay(long)` overridden while rendering (`DimensionTypeMixin`, `<1.21.11`) | same | same | `renderState.sunAngle` / `starAngle` / `moonAngle` written at RETURN (angle × 2π; moon + π) | same |
 | Server time update | `ClientLevel.setDayTime(long)` HEAD, skipped while the client's own `tickTime()` runs; a negative day time means the day does not advance; game time is already set | same | `ClientLevel.setTimeFromServer(long gameTime, long dayTime, boolean tickDayTime)` HEAD; `dayTimeRate` = 1 or 0 from `tickDayTime` | same | `ClientClockManager.handleUpdates(long, Map<Holder<WorldClock>, ClockNetworkState>)` HEAD: the overworld clock state when present, otherwise a game-time-only sync (`ClientClockManagerMixin`) |
 | Current sky time | `level.getDayTime()` | same | same | same | `level.getOverworldClockTime()` |
@@ -168,6 +169,22 @@ Targets: `1.21.1-fabric`, `1.21.1-neoforge` · first mod version: 0.1.2-alpha ·
 #### Verified
 - In-game validation not recorded.
 
+### MC 1.21 — Fabric / NeoForge
+
+Targets: `1.21-fabric`, `1.21-neoforge` · first mod version: unreleased · date: 2026-10-18
+
+#### Dependencies
+- NeoForge `21.0.167` (the last 21.0 build); Fabric API `0.102.0+1.21` and Mod Menu `11.0.3` for the dev client.
+
+#### API differences (vs. 1.21.1)
+- None. Every hook has the same signature as on 1.21.1; the version conditions that said `1.21.1` (`DeltaTracker` frame hook, `tickRateManager()`) now say `1.21`. Checked with `javap` on the Mojang-mapped 1.21 jar: `GameRenderer.render(DeltaTracker, boolean)`, `ClientLevel.setDayTime(long)` / `tickTime()`, `DimensionType.timeOfDay(long)`, and `TickRateManager.runsNormally()` / `tickrate()`.
+
+#### Quirks
+- `build.neoforge.gradle.kts` treats `1.21` as `1.21.0` for the Minecraft upper bound (`[1.21,1.21.1)`); incrementing the last component of `1.21` literally would give `1.22`.
+
+#### Verified
+- In-game validation not recorded.
+
 ### MC 1.20.1 — Fabric / Forge
 
 Targets: `1.20.1-fabric`, `1.20.1-forge` · first mod version: 0.1.2-alpha · date: 2026-07-27
@@ -177,7 +194,7 @@ Targets: `1.20.1-fabric`, `1.20.1-forge` · first mod version: 0.1.2-alpha · da
 - Forge uses ModDevGradle legacy (`net.neoforged.moddev.legacyforge`) with Mixin 0.8.5.
 
 #### API differences (vs. 1.21.1)
-- `GameRenderer.render(float, long, boolean)` is the frame hook (`GameRendererMixin`, `<1.21.1`).
+- `GameRenderer.render(float, long, boolean)` is the frame hook (`GameRendererMixin`, `<1.21`).
 - There is no tick rate manager (`/tick` arrived with 1.20.3): the nominal rate is 20 and time always runs normally. Time packets are handled as on 1.21.1.
 
 #### Quirks
