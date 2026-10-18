@@ -20,14 +20,16 @@ val neoForgeVersion = when (minecraftVersion) {
 	"1.21.10" -> project.property("neoforge_1_21_10_version") as String
 	"1.21.11" -> project.property("neoforge_1_21_11_version") as String
 	"26.1" -> project.property("neoforge_26_1_version") as String
+	"26.1.1" -> project.property("neoforge_26_1_1_version") as String
 	"26.1.2" -> project.property("neoforge_26_1_2_version") as String
 	"26.2" -> project.property("neoforge_26_2_version") as String
 	"26.3" -> project.property("neoforge_26_3_version") as String
 	else -> error("No NeoForge version is configured for Minecraft $minecraftVersion")
 }
 val minecraftVersionUpperBound = minecraftVersion.split(".").toMutableList().let { parts ->
-	// "1.21" is 1.21.0: its bound is 1.21.1, not 1.22.
-	if (parts[0] == "1" && parts.size == 2) parts.add("0")
+	// "1.21" is 1.21.0: its bound is 1.21.1, not 1.22. The same for 26.1, which has patch releases of its own
+	// (26.1.1, 26.1.2) that must not fall into its range.
+	if ((parts[0] == "1" || minecraftVersion == "26.1") && parts.size == 2) parts.add("0")
 	parts[parts.lastIndex] = (parts.last().toInt() + 1).toString()
 	parts.joinToString(".")
 }

@@ -68,13 +68,14 @@ Values come from `gradle.properties` and the loader build scripts; copy, do not 
 | 1.21.10 | 21 | same | `neoforge_1_21_10_version=21.10.64` |
 | 1.21.11 | 21 | same | `neoforge_1_21_11_version=21.11.45` |
 | 26.1 | 25 | same | `neoforge_26_1_version=26.1.0.19-beta` |
+| 26.1.1 | 25 | same | `neoforge_26_1_1_version=26.1.1.15-beta` |
 | 26.1.2 | 25 | same | `neoforge_26_1_2_version=26.1.2.116` |
 | 26.2 | 25 | `fabric_loader_version` / `fabric_loader_26_2_min_version=0.19.0` | `neoforge_26_2_version=26.2.0.90` |
 | 26.3 | 25 | same as 26.2 (`fabric_loader_26_2_min_version`) | `neoforge_26_3_version=26.3.0.76` |
 
 Current common values: `fabric_loader_version=0.19.5`, `fabric_loader_min_version=0.16.10`, `neoforge_loader_version_range=[4,)`. Ticks has no mod dependencies beyond the loader.
 
-Fabric dev clients additionally load Fabric API and Mod Menu through `modLocalRuntime` (`build.fabric.gradle.kts`), so the mod list can be checked without installing anything; neither is on the compile classpath or in the JAR. Versions are in `gradle.properties` as `modmenu_version_<minecraft version with _>` and `fabric_api_version_<minecraft version with _>`; a new Minecraft version needs both entries, or the Fabric build fails with a missing property. Mod Menu versions: `7.2.2` (1.20.1), `11.0.3` (1.21), `11.0.5` (1.21.1), `12.0.1` (1.21.2, 1.21.3), `13.0.4` (1.21.4), `14.0.0` (1.21.5), `15.0.0` (1.21.6, 1.21.7, 1.21.8), `16.0.0` (1.21.9, 1.21.10), `17.0.1` (1.21.11), `18.0.2` (26.1, 26.1.2), `20.0.3` (26.2), `21.0.0` (26.3).
+Fabric dev clients additionally load Fabric API and Mod Menu through `modLocalRuntime` (`build.fabric.gradle.kts`), so the mod list can be checked without installing anything; neither is on the compile classpath or in the JAR. Versions are in `gradle.properties` as `modmenu_version_<minecraft version with _>` and `fabric_api_version_<minecraft version with _>`; a new Minecraft version needs both entries, or the Fabric build fails with a missing property. Mod Menu versions: `7.2.2` (1.20.1), `11.0.3` (1.21), `11.0.5` (1.21.1), `12.0.1` (1.21.2, 1.21.3), `13.0.4` (1.21.4), `14.0.0` (1.21.5), `15.0.0` (1.21.6, 1.21.7, 1.21.8), `16.0.0` (1.21.9, 1.21.10), `17.0.1` (1.21.11), `18.0.2` (26.1, 26.1.1, 26.1.2), `20.0.3` (26.2), `21.0.0` (26.3).
 
 Fabric API is needed because Mod Menu requires some of its modules and Loom removes the ones nested in the Mod Menu JAR; the POMs of Mod Menu 11.0.3, 11.0.5, 13.0.4, and 17.0.1 do not declare them either, so Gradle would not pull them in (the client then stops with "Incompatible mods found"). NeoForge and Forge have a built-in mod list and need nothing.
 
@@ -83,7 +84,7 @@ Build tooling versions live in `settings.gradle.kts` (Stonecutter, Loom Back Com
 Metadata ranges:
 
 - Fabric: `minecraft` is an **exact** match of the target's Minecraft version, `java` is `>=` the target's Java version.
-- NeoForge: Minecraft `[X, X')` where `X'` is the target version with its last component incremented (`26.1.2` → `26.1.3`; `1.21` counts as `1.21.0` → `1.21.1`); NeoForge itself `[neoforge_version,)`.
+- NeoForge: Minecraft `[X, X')` where `X'` is the target version with its last component incremented (`26.1.2` → `26.1.3`; `1.21` counts as `1.21.0` → `1.21.1`, and `26.1` as `26.1.0` → `26.1.1`, because 26.1.1 and 26.1.2 have targets of their own); NeoForge itself `[neoforge_version,)`.
 - Forge (1.20.1): Minecraft `[1.20.1,1.20.2)`, Forge `[47,)`.
 
 ## Baseline
@@ -124,15 +125,17 @@ Likely trouble spots, in order: the frame/sky hook, the time-update hook, then m
 
 ### MC 26.x — Fabric / NeoForge
 
-Targets: `26.1`, `26.1.2`, `26.2`, `26.3` (each `-fabric` and `-neoforge`) · first mod version: 1.0.0-beta (`26.3`: 1.0.1) · date: 2026-07-29 (`26.3`: 2026-10-12) · **default target (`vcsVersion`): `26.3-fabric`**
+Targets: `26.1`, `26.1.1`, `26.1.2`, `26.2`, `26.3` (each `-fabric` and `-neoforge`) · first mod version: 1.0.0-beta (`26.3`: 1.0.1, `26.1.1`: 1.1.0) · date: 2026-07-29 (`26.3`: 2026-10-12, `26.1.1`: 2026-10-18) · **default target (`vcsVersion`): `26.3-fabric`**
 
 #### Dependencies
 - Java 25; unobfuscated Minecraft (no remapping, `isUnobfuscated` in `build.fabric.gradle.kts`).
 - 26.2 and 26.3 need Fabric Loader `>=0.19.0` (`fabric_loader_26_2_min_version`, shared by both in `build.fabric.gradle.kts`).
 - `26.1` uses a NeoForge beta (`26.1.0.19-beta`); revisit when a stable build appears. NeoForge `26.3.0.76` is a stable build.
+- `26.1.1` has only NeoForge betas (`26.1.1.15-beta`, the last one); Fabric API `0.145.4+26.1.1`, Mod Menu `18.0.2`.
 
 #### API differences (vs. 1.21.11)
 - World time comes from the overworld clock, not `getDayTime()`. The server sends the clock state only when it changes (`/time set`, rate, pause, join); the periodic sync every 20 ticks has an empty clock map and carries the game time only, so the day time between clock updates is `clock time + (gameTime - clock gameTime) * rate`. `ServerTimeEstimator` derives it that way and measures the real tick rate from those periodic game times.
+- 26.1.1 needed no source changes either: `SkyRenderer.extractRenderState(ClientLevel, float, Camera, SkyRenderState)`, `ClientClockManager.handleUpdates(long, Map)`, and the `SkyRenderState` angles are as on 26.1.2 (checked with `javap`), and the dev clients apply all five mixins.
 - 26.3 needed no source changes: the 26.2 hooks (`SkyRenderer.extractRenderState`, `ClientClockManager.handleUpdates`, `SkyRenderState` angles) have identical signatures, and the Fabric dev client runs with all five mixins applied.
 - NeoForge 26.2.0.90 and newer read `iconFile` / `iconBlur` (square icons) and `bannerFile` in `neoforge.mods.toml`. Older NeoForge (21.x, 26.1.x, 26.2 betas) knows only `logoFile`, so `build.neoforge.gradle.kts` fills `${mod_icon}` per target.
 
@@ -140,7 +143,8 @@ Targets: `26.1`, `26.1.2`, `26.2`, `26.3` (each `-fabric` and `-neoforge`) · fi
 - NeoForge 26.2.0.90 and newer deprecate `logoFile` / `logoBlur` and show a warning screen at launch when they are used.
 
 #### Verified
-- In-game validation not recorded (see WORKFLOW.md → Packaged-JAR validation).
+- 26.1.1, 2026-10-18, mod 1.1.0: scripted time-jump test ([WORKFLOW.md](WORKFLOW.md#scripted-time-jump-test)) passed on the Fabric and NeoForge dev clients (every check, no error in the log). One NeoForge run hung after the world opened and ran into the 8-minute limit without a cause being found; the rerun passed. Packaged JAR not launched.
+- Other 26.x targets: in-game validation not recorded (see WORKFLOW.md → Packaged-JAR validation).
 
 ### MC 1.21.11 — Fabric / NeoForge
 
