@@ -7,6 +7,7 @@ plugins {
 group = project.property("mod_group") as String
 val minecraftVersion = stonecutter.current.version.substringBeforeLast('-')
 val neoForgeVersion = when (minecraftVersion) {
+	"1.20.6" -> project.property("neoforge_1_20_6_version") as String
 	"1.21" -> project.property("neoforge_1_21_version") as String
 	"1.21.1" -> project.property("neoforge_version") as String
 	"1.21.2" -> project.property("neoforge_1_21_2_version") as String
@@ -39,6 +40,12 @@ val modIcon = if (minecraftVersion == "26.2" || minecraftVersion == "26.3") {
 	"iconFile=\"assets/ticks/icon.png\"\niconBlur=false"
 } else {
 	"logoFile=\"assets/ticks/icon.png\"\nlogoBlur=false"
+}
+// NeoForge 20.6 runs on FancyModLoader 3 (the `javafml` loader version); 21.0 and newer on 4.
+val neoForgeLoaderVersionRange = if (minecraftVersion == "1.20.6") {
+	project.property("neoforge_1_20_6_loader_version_range") as String
+} else {
+	project.property("neoforge_loader_version_range") as String
 }
 val releaseType = providers.gradleProperty("release_type").orElse("release").get()
 val displayVersion = (project.property("mod_version") as String).substringBefore('-')
@@ -93,7 +100,7 @@ tasks.processResources {
 		"mod_issues" to project.property("mod_issues"),
 		"minecraft_version" to minecraftVersion,
 		"neoforge_version" to neoForgeVersion,
-		"neoforge_loader_version_range" to project.property("neoforge_loader_version_range"),
+		"neoforge_loader_version_range" to neoForgeLoaderVersionRange,
 		"minecraft_version_upper_bound" to minecraftVersionUpperBound,
 		"mod_icon" to modIcon
 	)

@@ -55,7 +55,8 @@ Values come from `gradle.properties` and the loader build scripts; copy, do not 
 | Minecraft | Java | Fabric Loader (dev / min) | NeoForge / Forge (dev) |
 |---|---:|---|---|
 | 1.20.1 | 17 | `0.15.11` / `0.14.21` (pinned in `build.fabric.gradle.kts`) | Forge `1.20.1-47.4.26` (`forge_loader_version_range=[47,)`) |
-| 1.21 | 21 | `fabric_loader_version` / `fabric_loader_min_version` | `neoforge_1_21_version=21.0.167` |
+| 1.20.6 | 21 | `fabric_loader_version` / `fabric_loader_min_version` | `neoforge_1_20_6_version=20.6.144` (`neoforge_1_20_6_loader_version_range=[3,)`) |
+| 1.21 | 21 | same | `neoforge_1_21_version=21.0.167` |
 | 1.21.1 | 21 | same | `neoforge_version=21.1.259` |
 | 1.21.2 | 21 | same | `neoforge_1_21_2_version=21.2.1-beta` |
 | 1.21.3 | 21 | same | `neoforge_1_21_3_version=21.3.100` |
@@ -75,7 +76,7 @@ Values come from `gradle.properties` and the loader build scripts; copy, do not 
 
 Current common values: `fabric_loader_version=0.19.5`, `fabric_loader_min_version=0.16.10`, `neoforge_loader_version_range=[4,)`. Ticks has no mod dependencies beyond the loader.
 
-Fabric dev clients additionally load Fabric API and Mod Menu through `modLocalRuntime` (`build.fabric.gradle.kts`), so the mod list can be checked without installing anything; neither is on the compile classpath or in the JAR. Versions are in `gradle.properties` as `modmenu_version_<minecraft version with _>` and `fabric_api_version_<minecraft version with _>`; a new Minecraft version needs both entries, or the Fabric build fails with a missing property. Mod Menu versions: `7.2.2` (1.20.1), `11.0.3` (1.21), `11.0.5` (1.21.1), `12.0.1` (1.21.2, 1.21.3), `13.0.4` (1.21.4), `14.0.0` (1.21.5), `15.0.0` (1.21.6, 1.21.7, 1.21.8), `16.0.0` (1.21.9, 1.21.10), `17.0.1` (1.21.11), `18.0.2` (26.1, 26.1.1, 26.1.2), `20.0.3` (26.2), `21.0.0` (26.3).
+Fabric dev clients additionally load Fabric API and Mod Menu through `modLocalRuntime` (`build.fabric.gradle.kts`), so the mod list can be checked without installing anything; neither is on the compile classpath or in the JAR. Versions are in `gradle.properties` as `modmenu_version_<minecraft version with _>` and `fabric_api_version_<minecraft version with _>`; a new Minecraft version needs both entries, or the Fabric build fails with a missing property. Mod Menu versions: `7.2.2` (1.20.1), `10.0.0` (1.20.6), `11.0.3` (1.21), `11.0.5` (1.21.1), `12.0.1` (1.21.2, 1.21.3), `13.0.4` (1.21.4), `14.0.0` (1.21.5), `15.0.0` (1.21.6, 1.21.7, 1.21.8), `16.0.0` (1.21.9, 1.21.10), `17.0.1` (1.21.11), `18.0.2` (26.1, 26.1.1, 26.1.2), `20.0.3` (26.2), `21.0.0` (26.3).
 
 Fabric API is needed because Mod Menu requires some of its modules and Loom removes the ones nested in the Mod Menu JAR; the POMs of Mod Menu 11.0.3, 11.0.5, 13.0.4, and 17.0.1 do not declare them either, so Gradle would not pull them in (the client then stops with "Incompatible mods found"). NeoForge and Forge have a built-in mod list and need nothing.
 
@@ -84,14 +85,14 @@ Build tooling versions live in `settings.gradle.kts` (Stonecutter, Loom Back Com
 Metadata ranges:
 
 - Fabric: `minecraft` is an **exact** match of the target's Minecraft version, `java` is `>=` the target's Java version.
-- NeoForge: Minecraft `[X, X')` where `X'` is the target version with its last component incremented (`26.1.2` → `26.1.3`; `1.21` counts as `1.21.0` → `1.21.1`, and `26.1` as `26.1.0` → `26.1.1`, because 26.1.1 and 26.1.2 have targets of their own); NeoForge itself `[neoforge_version,)`.
+- NeoForge: Minecraft `[X, X')` where `X'` is the target version with its last component incremented (`26.1.2` → `26.1.3`; `1.21` counts as `1.21.0` → `1.21.1`, and `26.1` as `26.1.0` → `26.1.1`, because 26.1.1 and 26.1.2 have targets of their own); NeoForge itself `[neoforge_version,)`; `loaderVersion` (the `javafml` version) is `[4,)`, and `[3,)` for 1.20.6 (FancyModLoader 3).
 - Forge (1.20.1): Minecraft `[1.20.1,1.20.2)`, Forge `[47,)`.
 
 ## Baseline
 
 Conditions are written relative to the Minecraft version of the target (`>=1.21.4`, `<26`). The behavior of the oldest hook set is the **MC 1.21 / 1.21.1** column below; each later column lists only what changed.
 
-| Area | 1.20.1 | 1.21 / 1.21.1 (baseline) | 1.21.2 – 1.21.10 | 1.21.11 | 26.x |
+| Area | 1.20.1 – 1.20.6 | 1.21 / 1.21.1 (baseline) | 1.21.2 – 1.21.10 | 1.21.11 | 26.x |
 |---|---|---|---|---|---|
 | Frame hook | `GameRenderer.render(float partialTick, long nanoTime, boolean tick)` HEAD / RETURN (`GameRendererMixin`, `<1.21`) | `GameRenderer.render(DeltaTracker, boolean)`; partial tick from `deltaTracker.getGameTimeDeltaPartialTick(false)` (`>=1.21 <1.21.11`) | same | `SkyRenderer.extractRenderState(ClientLevel, float, Camera, SkyRenderState)` HEAD / RETURN (`SkyRendererMixin`) | same, with `SkyRenderState` in `net.minecraft.client.renderer.state.level` (`SkyRenderer26Mixin`) |
 | Sky angle | `DimensionType.timeOfDay(long)` overridden while rendering (`DimensionTypeMixin`, `<1.21.11`) | same | same | `renderState.sunAngle` / `starAngle` / `moonAngle` written at RETURN (angle × 2π; moon + π) | same |
@@ -303,6 +304,22 @@ Targets: `1.21-fabric`, `1.21-neoforge` · first mod version: 1.1.0 · date: 202
 
 #### Verified
 - In-game validation not recorded.
+
+### MC 1.20.6 — Fabric / NeoForge
+
+Targets: `1.20.6-fabric`, `1.20.6-neoforge` · first mod version: 1.1.0 · date: 2026-10-18
+
+#### Dependencies
+- Java 21 (1.20.5 and newer; 1.20.1–1.20.4 use 17); the Fabric build treats only 1.20.1 as legacy (Fabric Loader `0.15.11`), so 1.20.6 takes the current Loader.
+- NeoForge `20.6.144`, on FancyModLoader 3: `neoforge.mods.toml` needs `loaderVersion="[3,)"` (`neoforge_1_20_6_loader_version_range`), the global `[4,)` would reject the mod. Fabric API `0.100.8+1.20.6` and Mod Menu `10.0.0` (declares `minecraft >=1.20.5-`) for the dev client.
+
+#### API differences (vs. 1.21)
+- Frame hook: `GameRenderer.render(float, long, boolean)` as on 1.20.1 (the `DeltaTracker` signature starts with 1.21; conditions `<1.21` / `>=1.21`).
+- `TickRateManager` and `ClientLevel.tickRateManager()` exist (`/tick` arrived with 1.20.3), so the tick rate and freeze handling in `TicksController` uses `>=1.20.3`, not `>=1.21`.
+- Time packets as on 1.21.1: `ClientLevel.setDayTime(long)` skipped while the client's own `tickTime()` runs. Checked with `javap` on the Mojang-mapped 1.20.6 jar: `render(float, long, boolean)`, `setDayTime`, `tickTime`, `tickRateManager()`, `DimensionType.timeOfDay`, `TickRateManager.runsNormally()` / `tickrate()`, `Minecraft.isPaused()`.
+
+#### Verified
+- 2026-10-18, mod 1.1.0: scripted time-jump test ([WORKFLOW.md](WORKFLOW.md#scripted-time-jump-test)) passed on the Fabric and NeoForge dev clients (every check, no error in the log). Packaged JAR not launched.
 
 ### MC 1.20.1 — Fabric / Forge
 

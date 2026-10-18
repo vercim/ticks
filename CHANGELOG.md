@@ -4,7 +4,7 @@
 - New mod icon.
 
 ### Compatibility
-- Added Minecraft 1.21, 1.21.2, 1.21.3, 1.21.5, 1.21.6, 1.21.7, 1.21.8, 1.21.9, 1.21.10, and 26.1.1 support for Fabric and NeoForge.
+- Added Minecraft 1.20.6, 1.21, 1.21.2, 1.21.3, 1.21.5, 1.21.6, 1.21.7, 1.21.8, 1.21.9, 1.21.10, and 26.1.1 support for Fabric and NeoForge.
 - The NeoForge builds for 1.21.2, 1.21.6, 1.21.7, 1.21.9, and 26.1.1 need NeoForge 21.2.1-beta, 21.6.20-beta, 21.7.25-beta, 21.9.16-beta, and 26.1.1.15-beta or newer, because no stable NeoForge exists for those versions.
 - The NeoForge build for 26.1 now accepts only Minecraft 26.1 (it also accepted 26.1.1 and 26.1.2 before); use the 26.1.1 and 26.1.2 builds for those versions.
 
