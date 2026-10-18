@@ -4,7 +4,7 @@
 - New mod icon.
 
 ### Compatibility
-- Added Minecraft 1.21 support for Fabric and NeoForge.
+- Added Minecraft 1.21 and 1.21.3 support for Fabric and NeoForge.
 
 ## [1.0.2] - 2026-10-16
 

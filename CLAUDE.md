@@ -15,7 +15,7 @@ Ticks — client-side Minecraft mod that renders the sky (sun, moon, stars) at t
 ## Current state
 
 - Version `1.1.0` (earlier: `1.0.2`, `1.0.1`, `1.0.0-beta`, `0.1.2-alpha`).
-- Targets (declared once in `settings.gradle.kts`): `1.20.1-fabric`, `1.20.1-forge`, and `-fabric` / `-neoforge` for `1.21`, `1.21.1`, `1.21.4`, `1.21.11`, `26.1`, `26.1.2`, `26.2`, `26.3`. Per-target details: [docs/VERSION_NOTES.md](docs/VERSION_NOTES.md). Never add long-lived version branches.
+- Targets (declared once in `settings.gradle.kts`): `1.20.1-fabric`, `1.20.1-forge`, and `-fabric` / `-neoforge` for `1.21`, `1.21.1`, `1.21.3`, `1.21.4`, `1.21.11`, `26.1`, `26.1.2`, `26.2`, `26.3`. Per-target details: [docs/VERSION_NOTES.md](docs/VERSION_NOTES.md). Never add long-lived version branches.
 - `vcsVersion = 26.3-fabric` (the newest target): commit with `.sc_active_version` set to `26.3-fabric` and `src/` in its state. When a newer target is added, move `vcsVersion` to it.
 - README texts and images are shared with the Modrinth and CurseForge pages; keep README edits minimal and user-facing.
 
@@ -41,8 +41,8 @@ src/main/java/dev/vercim/ticks/
   TicksConfig.java            — load/save of config/ticks.json (transitionTimeMillis)
   mixin/
     GameRendererMixin.java    — frame begin/end hook via GameRenderer.render (<1.21.11)
-    ClientLevelMixin.java     — server time packets (setDayTime ignoring the client's own tick on <1.21.4,
-                                setTimeFromServer on 1.21.4–1.21.11; <26)
+    ClientLevelMixin.java     — server time packets (setDayTime ignoring the client's own tick on <1.21.2,
+                                setTimeFromServer on 1.21.2–1.21.11; <26)
     DimensionTypeMixin.java   — overrides DimensionType.timeOfDay during rendering (<1.21.11)
     SkyRendererMixin.java     — 1.21.11 only: frame hook + sun/moon/star angles in SkyRenderState
     SkyRenderer26Mixin.java   — 26.x: same on the 26.x SkyRenderState + overworld clock
@@ -68,7 +68,7 @@ The target is the server's day time as `ServerTimeEstimator` extrapolates it: th
 
 - **<1.21.11:** `GameRendererMixin` brackets `GameRenderer.render` with `beginFrame` / `endFrame`; `DimensionTypeMixin` replaces `DimensionType.timeOfDay(long)` while `rendering` is set and the requested day time matches the tracked level.
 - **1.21.11 and 26.x:** the sky is extracted to a `SkyRenderState`; `SkyRendererMixin` / `SkyRenderer26Mixin` call `beginFrame` at the head of `extractRenderState` and write the sun, star, and moon angles at its return, then `endFrame`. `DimensionTypeMixin` has no effect there.
-- **Time packets:** `ClientLevelMixin` (`setDayTime` on <1.21.4, where the client's own per-tick calls are skipped through `tickTime`; `setTimeFromServer` on 1.21.4–1.21.11) forwards each server packet's game time and day time. On 26.x `ClientClockManagerMixin` forwards overworld clock updates, and the periodic game-time-only syncs (empty clock map) that carry the speed measurement. Do not hook `ClientPacketListener.handleSetTime`: NeoForge's custom time payload bypasses it.
+- **Time packets:** `ClientLevelMixin` (`setDayTime` on <1.21.2, where the client's own per-tick calls are skipped through `tickTime`; `setTimeFromServer` on 1.21.2–1.21.11) forwards each server packet's game time and day time. On 26.x `ClientClockManagerMixin` forwards overworld clock updates, and the periodic game-time-only syncs (empty clock map) that carry the speed measurement. Do not hook `ClientPacketListener.handleSetTime`: NeoForge's custom time payload bypasses it.
 - **Time jumps:** a packet whose day time differs from the previous one by more than the game ticks between them allow (`/time set`, sleeping) is flagged as a jump (`markTimeJump`); large corrections after lag are flagged too, so they blend instead of snapping.
 - **Pause and freeze:** while `Minecraft.isPaused()` or the tick rate manager does not run normally (`/tick freeze`) the estimate holds still, and the interpolator advances no time, so the blend does not drain during a pause menu.
 - **Fixed-time dimensions** (`hasFixedTime`) and non-tracked levels are never overridden.

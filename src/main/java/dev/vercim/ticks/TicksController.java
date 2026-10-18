@@ -2,7 +2,7 @@ package dev.vercim.ticks;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-//? if <1.21.4 {
+//? if <1.21.2 {
 
 /*import net.minecraft.world.level.GameRules;
 *///?}
@@ -19,7 +19,7 @@ public final class TicksController {
 	private static final SkyTimeInterpolator INTERPOLATOR = new SkyTimeInterpolator();
 	private static final ServerTimeEstimator SERVER_TIME = new ServerTimeEstimator();
 	private static ClientLevel serverTimeLevel;
-	//? if >=1.21.4 {
+	//? if >=1.21.2 {
 	private static double dayTimeRate = 1.0;
 	//?}
 
@@ -66,7 +66,7 @@ public final class TicksController {
 		}
 	}
 	//?}
-	//? if >=1.21.4 {
+	//? if >=1.21.2 {
 	//? if <26 {
 	/*public static void onDayTimeSet(ClientLevel level, long gameTime, long newDayTime, boolean tickDayTime) {
 		dayTimeRate = tickDayTime ? 1.0 : 0.0;
@@ -74,7 +74,7 @@ public final class TicksController {
 	}
 	*///?}
 	//?}
-	//? if <1.21.4 {
+	//? if <1.21.2 {
 	/*public static void onDayTimeSet(ClientLevel level, long gameTime, long newDayTime) {
 		// A negative time is how the server tells the client that the day does not advance.
 		trackServerTime(level, gameTime, Math.abs(newDayTime));
@@ -129,10 +129,10 @@ public final class TicksController {
 	}
 
 	private static double getDayTimeRate(ClientLevel level) {
-		//? if >=1.21.4 {
+		//? if >=1.21.2 {
 		return dayTimeRate;
 		//?}
-		//? if <1.21.4 {
+		//? if <1.21.2 {
 		/*return level.getGameRules().getBoolean(GameRules.RULE_DAYLIGHT) ? 1.0 : 0.0;
 		*///?}
 	}
@@ -153,7 +153,7 @@ public final class TicksController {
 		renderedSkyAngle = null;
 		SERVER_TIME.reset();
 		INTERPOLATOR.reset();
-		//? if >=1.21.4 {
+		//? if >=1.21.2 {
 		dayTimeRate = 1.0;
 		//?}
 	}

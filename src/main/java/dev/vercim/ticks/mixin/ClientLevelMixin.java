@@ -3,7 +3,7 @@ package dev.vercim.ticks.mixin;
 import dev.vercim.ticks.TicksController;
 import net.minecraft.client.multiplayer.ClientLevel;
 import org.spongepowered.asm.mixin.Mixin;
-//? if <1.21.4 {
+//? if <1.21.2 {
 
 /*import org.spongepowered.asm.mixin.Unique;
 *///?}
@@ -14,13 +14,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ClientLevel.class)
 abstract class ClientLevelMixin {
 	//? if <26 {
-	/*//? if >=1.21.4 {
+	/*//? if >=1.21.2 {
 	@Inject(method = "setTimeFromServer", at = @At("HEAD"))
 	private void ticks$trackTimeUpdate(long gameTime, long dayTime, boolean tickDayTime, CallbackInfo callbackInfo) {
 		TicksController.onDayTimeSet((ClientLevel) (Object) this, gameTime, dayTime, tickDayTime);
 	}
 	//?}
-	//? if <1.21.4 {
+	//? if <1.21.2 {
 	/^// The client advances its own game and day time every tick through the same setters the server packet uses.
 	@Unique
 	private boolean ticks$localTick;

@@ -9,6 +9,7 @@ val minecraftVersion = stonecutter.current.version.substringBeforeLast('-')
 val neoForgeVersion = when (minecraftVersion) {
 	"1.21" -> project.property("neoforge_1_21_version") as String
 	"1.21.1" -> project.property("neoforge_version") as String
+	"1.21.3" -> project.property("neoforge_1_21_3_version") as String
 	"1.21.4" -> project.property("neoforge_1_21_4_version") as String
 	"1.21.11" -> project.property("neoforge_1_21_11_version") as String
 	"26.1" -> project.property("neoforge_26_1_version") as String
