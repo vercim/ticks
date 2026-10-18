@@ -205,6 +205,41 @@ IDE runs are not enough for loader or Mixin changes. Before releasing (and after
 
 Use a clean client profile each time, and record the outcome in the target's `Verified` line in [VERSION_NOTES.md](VERSION_NOTES.md). Shaders are not supported.
 
+## Scripted time-jump test
+
+Mixins and rendering cannot be unit-tested, and a build or a `javap` check does not show that the sky really moves. `tools/selftest/` holds a harness that starts the real dev client, joins a test world, sets the time with server commands (`/time set 0`, `12000`, `/time add 6000`, `23000`, then `1000` to cross midnight, `6000`, `18000`), records the visual sky time of every frame and judges it. It is not part of the mod: `run-selftest.ps1` copies it into `src/` for a run and removes it again, so it never reaches a JAR.
+
+What it checks:
+
+- the sky moves in (nearly) every frame, not once per tick, and never steps back by more than a few ticks;
+- before 1.21.11 `DimensionType.timeOfDay` returns the visual time (the hook is applied);
+- every jump is blended along the shortest route (`1000` after `23000` runs forward through midnight), no single frame takes more than 35 % of it, about half is left after 100 ms, and the sky is within 10 ticks of the real time after 2.5 s;
+- `latest.log` has no mixin or other error lines.
+
+Windows PowerShell only. Close every running dev client and Gradle run first (a running one holds the Gradle lock), and do not click into the game window that opens for about a minute per target.
+
+Every target in `versions/`, one after the other (about two minutes each):
+
+```powershell
+.\tools\selftest\run-selftest.ps1
+```
+
+Chosen targets only (comma-separated: a space makes PowerShell bind the second name to another parameter):
+
+```powershell
+.\tools\selftest\run-selftest.ps1 -Targets 1.21.9-fabric,1.21.9-neoforge
+```
+
+The script needs a creative world with cheats to copy; without `-World <folder>` it takes the first one it finds in `versions/*/run/saves` (the oldest target's, because an older game cannot open a newer world). It switches the profile's `options.txt` for the run (`onboardAccessibility:false`: a fresh profile opens the accessibility onboarding screen instead of the quick-play world and the run hangs there; `pauseOnLostFocus:false`) and restores it afterwards. `-KeepFiles` leaves `ticks-selftest.csv` (one row per frame) and the world copy in the profile.
+
+Clean up after a run that was killed:
+
+```powershell
+.\tools\selftest\run-selftest.ps1 -Uninstall
+```
+
+Record each run in the target's `Verified` line in [VERSION_NOTES.md](VERSION_NOTES.md). The test does not replace the packaged-JAR validation above (loader metadata, the real mod list, `/tick`, the Nether and the End).
+
 ## Changelog
 
 [`CHANGELOG.md`](../CHANGELOG.md) is user-facing and is also published as the release notes, so it must be updated together with the version.

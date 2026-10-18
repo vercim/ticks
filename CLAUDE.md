@@ -24,6 +24,7 @@ Ticks — client-side Minecraft mod that renders the sky (sun, moon, stars) at t
 - Ticks only changes what the sky *looks like* during rendering. World time, server synchronization, and game logic must stay untouched: the override is visible only while a frame is being rendered (`TicksController.rendering`).
 - IDE-only runs prove nothing about loader integration; validate the packaged JAR from `build/libs/<mod_version>/` in a clean client profile (steps in [docs/WORKFLOW.md](docs/WORKFLOW.md)).
 - Every JAR must register its mixin config (`ticks.mixins.json` for Fabric and NeoForge, `ticks.forge.mixins.json` + refmap for Forge), and loader-specific classes must be absent from the other loaders' JARs. A missing registration makes the mod load while every injection silently does nothing.
+- When adding support for a new Minecraft version or loader, run the scripted time-jump test (`.\tools\selftest\run-selftest.ps1`, see [docs/WORKFLOW.md](docs/WORKFLOW.md#scripted-time-jump-test)) on the dev client of **every** new target (every loader of it), each at least once, and read the log, before calling the port done. A build or a `javap` check does not count, and a target with no run recorded in [docs/VERSION_NOTES.md](docs/VERSION_NOTES.md) is untested; say so instead of writing "all passed".
 - Build commands differ per OS (`.\gradlew.bat` on Windows, `./gradlew` on macOS/Linux); take them from [docs/WORKFLOW.md](docs/WORKFLOW.md) rather than guessing.
 - The default Stonecutter target (`vcsVersion` in `settings.gradle.kts` and the committed `.sc_active_version`) is always the latest Minecraft version, Fabric build: currently `26.3-fabric`. The committed `src/` is in that target's state. Switch targets only with `Set active project to <target>` (it rewrites `src/`) and restore the default before committing (`Reset active project`); move both when a new version is ported ([docs/WORKFLOW.md](docs/WORKFLOW.md#default-target)).
 - Conditional sources are plain Stonecutter comments (`//? if … {`), and the active target compiles straight from `src/`: after editing `.sc_active_version` by hand, or when a conditional block looks wrong, the sources are stale until `Set active project to <target>` or `Refresh active project` runs (see [Conditional sources](#conditional-sources)).
@@ -56,6 +57,7 @@ src/main/resources/    — ticks.mixins.json (template), assets/ticks/icon.png
 src/test/java/dev/vercim/ticks/ — JUnit 5 tests for SkyTimeMath, SkyTimeInterpolator, ServerTimeEstimator, TickRateEstimator, TicksConfig
 build.fabric.gradle.kts / build.forge.gradle.kts / build.neoforge.gradle.kts — per-loader build + publishing
 stonecutter.gradle.kts — loader constants for conditions, `runActiveClient`, `buildActive`, `clean`
+tools/selftest/                 — scripted time-jump test (harness + run-selftest.ps1); copied into src/ only while a run lasts, never part of the mod
 ```
 
 Metadata files (`fabric.mod.json`, `mods.toml`, `neoforge.mods.toml`, `ticks.mixins.json`) are templates: Gradle `expand`s `${...}` values from `gradle.properties` and the build scripts, so edit values there, not in the generated JAR.

@@ -1,0 +1,7 @@
+// Passed to Gradle with -I by run-selftest.ps1: makes runClient join the test world and switches the harness on.
+gradle.taskGraph.whenReady { graph ->
+	graph.allTasks.findAll { it.name == 'runClient' }.each { task ->
+		task.args('--quickPlaySingleplayer', 'ticks-selftest')
+		task.jvmArgs('-Dticks.selftest=1')
+	}
+}

@@ -113,7 +113,7 @@ For each new version, after adding the targets:
 - Time advancement: daylight rule, `tickDayTime`, tick rate / freeze handling.
 - Express differences with narrow conditions in the shared tree, not copied files; update `ticks.mixins.json` placeholders if a mixin class is added.
 - Mixin config is registered in each packaged JAR; Forge refmap present.
-- Run `:<target>:test` and the packaged-JAR validation in [WORKFLOW.md](WORKFLOW.md) for each loader.
+- Run `:<target>:test`, the [scripted time-jump test](WORKFLOW.md#scripted-time-jump-test) on the dev client of each loader, and the packaged-JAR validation in [WORKFLOW.md](WORKFLOW.md) for each loader.
 - Fill this file's entry for the version; add a `CHANGELOG.md` line under `Compatibility`.
 
 Likely trouble spots, in order: the frame/sky hook, the time-update hook, then metadata and dependency version ranges.
