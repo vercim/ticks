@@ -1,7 +1,7 @@
 package dev.vercim.ticks.mixin;
 
 import dev.vercim.ticks.TicksController;
-//? if >=1.21.1 {
+//? if >=1.21 {
 import net.minecraft.client.DeltaTracker;
 //?}
 import net.minecraft.client.renderer.GameRenderer;
@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(GameRenderer.class)
 abstract class GameRendererMixin {
-	//? if >=1.21.1 {
+	//? if >=1.21 {
 	//? if <1.21.11 {
 	/*@Inject(method = "render", at = @At("HEAD"))
 	private void ticks$beginFrame(DeltaTracker deltaTracker, boolean tick, CallbackInfo callbackInfo) {
@@ -25,7 +25,7 @@ abstract class GameRendererMixin {
 	}
 	*///?}
 	//?}
-	//? if <1.21.1 {
+	//? if <1.21 {
 	/*@Inject(method = "render", at = @At("HEAD"))
 	private void ticks$beginFrame(float partialTick, long nanoTime, boolean tick, CallbackInfo callbackInfo) {
 		TicksController.beginFrame(partialTick);

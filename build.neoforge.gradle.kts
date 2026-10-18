@@ -7,16 +7,30 @@ plugins {
 group = project.property("mod_group") as String
 val minecraftVersion = stonecutter.current.version.substringBeforeLast('-')
 val neoForgeVersion = when (minecraftVersion) {
+	"1.20.6" -> project.property("neoforge_1_20_6_version") as String
+	"1.21" -> project.property("neoforge_1_21_version") as String
 	"1.21.1" -> project.property("neoforge_version") as String
+	"1.21.2" -> project.property("neoforge_1_21_2_version") as String
+	"1.21.3" -> project.property("neoforge_1_21_3_version") as String
 	"1.21.4" -> project.property("neoforge_1_21_4_version") as String
+	"1.21.5" -> project.property("neoforge_1_21_5_version") as String
+	"1.21.6" -> project.property("neoforge_1_21_6_version") as String
+	"1.21.7" -> project.property("neoforge_1_21_7_version") as String
+	"1.21.8" -> project.property("neoforge_1_21_8_version") as String
+	"1.21.9" -> project.property("neoforge_1_21_9_version") as String
+	"1.21.10" -> project.property("neoforge_1_21_10_version") as String
 	"1.21.11" -> project.property("neoforge_1_21_11_version") as String
 	"26.1" -> project.property("neoforge_26_1_version") as String
+	"26.1.1" -> project.property("neoforge_26_1_1_version") as String
 	"26.1.2" -> project.property("neoforge_26_1_2_version") as String
 	"26.2" -> project.property("neoforge_26_2_version") as String
 	"26.3" -> project.property("neoforge_26_3_version") as String
 	else -> error("No NeoForge version is configured for Minecraft $minecraftVersion")
 }
 val minecraftVersionUpperBound = minecraftVersion.split(".").toMutableList().let { parts ->
+	// "1.21" is 1.21.0: its bound is 1.21.1, not 1.22. The same for 26.1, which has patch releases of its own
+	// (26.1.1, 26.1.2) that must not fall into its range.
+	if ((parts[0] == "1" || minecraftVersion == "26.1") && parts.size == 2) parts.add("0")
 	parts[parts.lastIndex] = (parts.last().toInt() + 1).toString()
 	parts.joinToString(".")
 }
@@ -26,6 +40,12 @@ val modIcon = if (minecraftVersion == "26.2" || minecraftVersion == "26.3") {
 	"iconFile=\"assets/ticks/icon.png\"\niconBlur=false"
 } else {
 	"logoFile=\"assets/ticks/icon.png\"\nlogoBlur=false"
+}
+// NeoForge 20.6 runs on FancyModLoader 3 (the `javafml` loader version); 21.0 and newer on 4.
+val neoForgeLoaderVersionRange = if (minecraftVersion == "1.20.6") {
+	project.property("neoforge_1_20_6_loader_version_range") as String
+} else {
+	project.property("neoforge_loader_version_range") as String
 }
 val releaseType = providers.gradleProperty("release_type").orElse("release").get()
 val displayVersion = (project.property("mod_version") as String).substringBefore('-')
@@ -80,7 +100,7 @@ tasks.processResources {
 		"mod_issues" to project.property("mod_issues"),
 		"minecraft_version" to minecraftVersion,
 		"neoforge_version" to neoForgeVersion,
-		"neoforge_loader_version_range" to project.property("neoforge_loader_version_range"),
+		"neoforge_loader_version_range" to neoForgeLoaderVersionRange,
 		"minecraft_version_upper_bound" to minecraftVersionUpperBound,
 		"mod_icon" to modIcon
 	)

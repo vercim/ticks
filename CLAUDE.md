@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Ticks — client-side Minecraft mod that renders the sky (sun, moon, stars) at the frame rate instead of the game tick rate. Fabric + Forge + NeoForge, one shared source tree built with Stonecutter for 16 targets (Minecraft 1.20.1 – 26.3), Mojang mappings.
+Ticks — client-side Minecraft mod that renders the sky (sun, moon, stars) at the frame rate instead of the game tick rate. Fabric + Forge + NeoForge, one shared source tree built with Stonecutter for every target (Minecraft 1.20.1 – 26.3), Mojang mappings.
 
 `AGENTS.md` is a symlink to this file.
 
@@ -14,8 +14,8 @@ Ticks — client-side Minecraft mod that renders the sky (sun, moon, stars) at t
 
 ## Current state
 
-- Version `1.0.2` (earlier: `1.0.1`, `1.0.0-beta`, `0.1.2-alpha`).
-- Targets (declared once in `settings.gradle.kts`): `1.20.1-fabric`, `1.20.1-forge`, and `-fabric` / `-neoforge` for `1.21.1`, `1.21.4`, `1.21.11`, `26.1`, `26.1.2`, `26.2`, `26.3`. Per-target details: [docs/VERSION_NOTES.md](docs/VERSION_NOTES.md). Never add long-lived version branches.
+- Version `1.1.0` (earlier: `1.0.2`, `1.0.1`, `1.0.0-beta`, `0.1.2-alpha`).
+- Targets (declared once in `settings.gradle.kts`): `1.20.1-fabric`, `1.20.1-forge`, and `-fabric` / `-neoforge` for `1.20.6`, `1.21`, `1.21.1`, `1.21.2`, `1.21.3`, `1.21.4`, `1.21.5`, `1.21.6`, `1.21.7`, `1.21.8`, `1.21.9`, `1.21.10`, `1.21.11`, `26.1`, `26.1.1`, `26.1.2`, `26.2`, `26.3`. Per-target details: [docs/VERSION_NOTES.md](docs/VERSION_NOTES.md). Never add long-lived version branches.
 - `vcsVersion = 26.3-fabric` (the newest target): commit with `.sc_active_version` set to `26.3-fabric` and `src/` in its state. When a newer target is added, move `vcsVersion` to it.
 - README texts and images are shared with the Modrinth and CurseForge pages; keep README edits minimal and user-facing.
 
@@ -24,6 +24,7 @@ Ticks — client-side Minecraft mod that renders the sky (sun, moon, stars) at t
 - Ticks only changes what the sky *looks like* during rendering. World time, server synchronization, and game logic must stay untouched: the override is visible only while a frame is being rendered (`TicksController.rendering`).
 - IDE-only runs prove nothing about loader integration; validate the packaged JAR from `build/libs/<mod_version>/` in a clean client profile (steps in [docs/WORKFLOW.md](docs/WORKFLOW.md)).
 - Every JAR must register its mixin config (`ticks.mixins.json` for Fabric and NeoForge, `ticks.forge.mixins.json` + refmap for Forge), and loader-specific classes must be absent from the other loaders' JARs. A missing registration makes the mod load while every injection silently does nothing.
+- When adding support for a new Minecraft version or loader, run the scripted time-jump test (`.\tools\selftest\run-selftest.ps1`, see [docs/WORKFLOW.md](docs/WORKFLOW.md#scripted-time-jump-test)) on the dev client of **every** new target (every loader of it), each at least once, and read the log, before calling the port done. A build or a `javap` check does not count, and a target with no run recorded in [docs/VERSION_NOTES.md](docs/VERSION_NOTES.md) is untested; say so instead of writing "all passed".
 - Build commands differ per OS (`.\gradlew.bat` on Windows, `./gradlew` on macOS/Linux); take them from [docs/WORKFLOW.md](docs/WORKFLOW.md) rather than guessing.
 - The default Stonecutter target (`vcsVersion` in `settings.gradle.kts` and the committed `.sc_active_version`) is always the latest Minecraft version, Fabric build: currently `26.3-fabric`. The committed `src/` is in that target's state. Switch targets only with `Set active project to <target>` (it rewrites `src/`) and restore the default before committing (`Reset active project`); move both when a new version is ported ([docs/WORKFLOW.md](docs/WORKFLOW.md#default-target)).
 - Conditional sources are plain Stonecutter comments (`//? if … {`), and the active target compiles straight from `src/`: after editing `.sc_active_version` by hand, or when a conditional block looks wrong, the sources are stale until `Set active project to <target>` or `Refresh active project` runs (see [Conditional sources](#conditional-sources)).
@@ -41,8 +42,8 @@ src/main/java/dev/vercim/ticks/
   TicksConfig.java            — load/save of config/ticks.json (transitionTimeMillis)
   mixin/
     GameRendererMixin.java    — frame begin/end hook via GameRenderer.render (<1.21.11)
-    ClientLevelMixin.java     — server time packets (setDayTime ignoring the client's own tick on <1.21.4,
-                                setTimeFromServer on 1.21.4–1.21.11; <26)
+    ClientLevelMixin.java     — server time packets (setDayTime ignoring the client's own tick on <1.21.2,
+                                setTimeFromServer on 1.21.2–1.21.11; <26)
     DimensionTypeMixin.java   — overrides DimensionType.timeOfDay during rendering (<1.21.11)
     SkyRendererMixin.java     — 1.21.11 only: frame hook + sun/moon/star angles in SkyRenderState
     SkyRenderer26Mixin.java   — 26.x: same on the 26.x SkyRenderState + overworld clock
@@ -56,6 +57,7 @@ src/main/resources/    — ticks.mixins.json (template), assets/ticks/icon.png
 src/test/java/dev/vercim/ticks/ — JUnit 5 tests for SkyTimeMath, SkyTimeInterpolator, ServerTimeEstimator, TickRateEstimator, TicksConfig
 build.fabric.gradle.kts / build.forge.gradle.kts / build.neoforge.gradle.kts — per-loader build + publishing
 stonecutter.gradle.kts — loader constants for conditions, `runActiveClient`, `buildActive`, `clean`
+tools/selftest/                 — scripted time-jump test (harness + run-selftest.ps1); copied into src/ only while a run lasts, never part of the mod
 ```
 
 Metadata files (`fabric.mod.json`, `mods.toml`, `neoforge.mods.toml`, `ticks.mixins.json`) are templates: Gradle `expand`s `${...}` values from `gradle.properties` and the build scripts, so edit values there, not in the generated JAR.
@@ -68,7 +70,7 @@ The target is the server's day time as `ServerTimeEstimator` extrapolates it: th
 
 - **<1.21.11:** `GameRendererMixin` brackets `GameRenderer.render` with `beginFrame` / `endFrame`; `DimensionTypeMixin` replaces `DimensionType.timeOfDay(long)` while `rendering` is set and the requested day time matches the tracked level.
 - **1.21.11 and 26.x:** the sky is extracted to a `SkyRenderState`; `SkyRendererMixin` / `SkyRenderer26Mixin` call `beginFrame` at the head of `extractRenderState` and write the sun, star, and moon angles at its return, then `endFrame`. `DimensionTypeMixin` has no effect there.
-- **Time packets:** `ClientLevelMixin` (`setDayTime` on <1.21.4, where the client's own per-tick calls are skipped through `tickTime`; `setTimeFromServer` on 1.21.4–1.21.11) forwards each server packet's game time and day time. On 26.x `ClientClockManagerMixin` forwards overworld clock updates, and the periodic game-time-only syncs (empty clock map) that carry the speed measurement. Do not hook `ClientPacketListener.handleSetTime`: NeoForge's custom time payload bypasses it.
+- **Time packets:** `ClientLevelMixin` (`setDayTime` on <1.21.2, where the client's own per-tick calls are skipped through `tickTime`; `setTimeFromServer` on 1.21.2–1.21.11) forwards each server packet's game time and day time. On 26.x `ClientClockManagerMixin` forwards overworld clock updates, and the periodic game-time-only syncs (empty clock map) that carry the speed measurement. Do not hook `ClientPacketListener.handleSetTime`: NeoForge's custom time payload bypasses it.
 - **Time jumps:** a packet whose day time differs from the previous one by more than the game ticks between them allow (`/time set`, sleeping) is flagged as a jump (`markTimeJump`); large corrections after lag are flagged too, so they blend instead of snapping.
 - **Pause and freeze:** while `Minecraft.isPaused()` or the tick rate manager does not run normally (`/tick freeze`) the estimate holds still, and the interpolator advances no time, so the blend does not drain during a pause menu.
 - **Fixed-time dimensions** (`hasFixedTime`) and non-tracked levels are never overridden.
@@ -96,7 +98,7 @@ Tabs for indentation, braces on the same line, grouped imports, `final` utility 
 
 ## Testing
 
-JUnit Jupiter 5 runs per target as part of `build` (CI runs all 16). Name test files `*Test.java` and methods after observable behavior (for example `midnightUsesTheShortForwardRoute`). Add deterministic unit tests for interpolation, wrapping, and discontinuities; run one target with `:1.21.1-fabric:test` while narrowing a failure. Mixins and rendering cannot be unit-tested: use the packaged-JAR checklist in [docs/WORKFLOW.md](docs/WORKFLOW.md#packaged-jar-validation).
+JUnit Jupiter 5 runs per target as part of `build` (CI runs every target). Name test files `*Test.java` and methods after observable behavior (for example `midnightUsesTheShortForwardRoute`). Add deterministic unit tests for interpolation, wrapping, and discontinuities; run one target with `:1.21.1-fabric:test` while narrowing a failure. Mixins and rendering cannot be unit-tested: use the packaged-JAR checklist in [docs/WORKFLOW.md](docs/WORKFLOW.md#packaged-jar-validation).
 
 ## Changelog
 

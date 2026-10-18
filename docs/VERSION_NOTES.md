@@ -55,39 +55,50 @@ Values come from `gradle.properties` and the loader build scripts; copy, do not 
 | Minecraft | Java | Fabric Loader (dev / min) | NeoForge / Forge (dev) |
 |---|---:|---|---|
 | 1.20.1 | 17 | `0.15.11` / `0.14.21` (pinned in `build.fabric.gradle.kts`) | Forge `1.20.1-47.4.26` (`forge_loader_version_range=[47,)`) |
-| 1.21.1 | 21 | `fabric_loader_version` / `fabric_loader_min_version` | `neoforge_version=21.1.259` |
+| 1.20.6 | 21 | `fabric_loader_version` / `fabric_loader_min_version` | `neoforge_1_20_6_version=20.6.144` (`neoforge_1_20_6_loader_version_range=[3,)`) |
+| 1.21 | 21 | same | `neoforge_1_21_version=21.0.167` |
+| 1.21.1 | 21 | same | `neoforge_version=21.1.259` |
+| 1.21.2 | 21 | same | `neoforge_1_21_2_version=21.2.1-beta` |
+| 1.21.3 | 21 | same | `neoforge_1_21_3_version=21.3.100` |
 | 1.21.4 | 21 | same | `neoforge_1_21_4_version=21.4.158` |
+| 1.21.5 | 21 | same | `neoforge_1_21_5_version=21.5.101` |
+| 1.21.6 | 21 | same | `neoforge_1_21_6_version=21.6.20-beta` |
+| 1.21.7 | 21 | same | `neoforge_1_21_7_version=21.7.25-beta` |
+| 1.21.8 | 21 | same | `neoforge_1_21_8_version=21.8.57` |
+| 1.21.9 | 21 | same | `neoforge_1_21_9_version=21.9.16-beta` |
+| 1.21.10 | 21 | same | `neoforge_1_21_10_version=21.10.64` |
 | 1.21.11 | 21 | same | `neoforge_1_21_11_version=21.11.45` |
 | 26.1 | 25 | same | `neoforge_26_1_version=26.1.0.19-beta` |
+| 26.1.1 | 25 | same | `neoforge_26_1_1_version=26.1.1.15-beta` |
 | 26.1.2 | 25 | same | `neoforge_26_1_2_version=26.1.2.116` |
 | 26.2 | 25 | `fabric_loader_version` / `fabric_loader_26_2_min_version=0.19.0` | `neoforge_26_2_version=26.2.0.90` |
 | 26.3 | 25 | same as 26.2 (`fabric_loader_26_2_min_version`) | `neoforge_26_3_version=26.3.0.76` |
 
 Current common values: `fabric_loader_version=0.19.5`, `fabric_loader_min_version=0.16.10`, `neoforge_loader_version_range=[4,)`. Ticks has no mod dependencies beyond the loader.
 
-Fabric dev clients additionally load Fabric API and Mod Menu through `modLocalRuntime` (`build.fabric.gradle.kts`), so the mod list can be checked without installing anything; neither is on the compile classpath or in the JAR. Versions are in `gradle.properties` as `modmenu_version_<minecraft version with _>` and `fabric_api_version_<minecraft version with _>`; a new Minecraft version needs both entries, or the Fabric build fails with a missing property. Mod Menu versions: `7.2.2` (1.20.1), `11.0.5` (1.21.1), `13.0.4` (1.21.4), `17.0.1` (1.21.11), `18.0.2` (26.1, 26.1.2), `20.0.3` (26.2), `21.0.0` (26.3).
+Fabric dev clients additionally load Fabric API and Mod Menu through `modLocalRuntime` (`build.fabric.gradle.kts`), so the mod list can be checked without installing anything; neither is on the compile classpath or in the JAR. Versions are in `gradle.properties` as `modmenu_version_<minecraft version with _>` and `fabric_api_version_<minecraft version with _>`; a new Minecraft version needs both entries, or the Fabric build fails with a missing property. Mod Menu versions: `7.2.2` (1.20.1), `10.0.0` (1.20.6), `11.0.3` (1.21), `11.0.5` (1.21.1), `12.0.1` (1.21.2, 1.21.3), `13.0.4` (1.21.4), `14.0.0` (1.21.5), `15.0.0` (1.21.6, 1.21.7, 1.21.8), `16.0.0` (1.21.9, 1.21.10), `17.0.1` (1.21.11), `18.0.2` (26.1, 26.1.1, 26.1.2), `20.0.3` (26.2), `21.0.0` (26.3).
 
-Fabric API is needed because Mod Menu requires some of its modules and Loom removes the ones nested in the Mod Menu JAR; the POMs of Mod Menu 11.0.5, 13.0.4, and 17.0.1 do not declare them either, so Gradle would not pull them in (the client then stops with "Incompatible mods found"). NeoForge and Forge have a built-in mod list and need nothing.
+Fabric API is needed because Mod Menu requires some of its modules and Loom removes the ones nested in the Mod Menu JAR; the POMs of Mod Menu 11.0.3, 11.0.5, 13.0.4, and 17.0.1 do not declare them either, so Gradle would not pull them in (the client then stops with "Incompatible mods found"). NeoForge and Forge have a built-in mod list and need nothing.
 
 Build tooling versions live in `settings.gradle.kts` (Stonecutter, Loom Back Compat, NeoForge ModDevGradle, Mod Publish Plugin, Foojay) and `gradle/wrapper/gradle-wrapper.properties`. Keep `loomx.loom_version` in `gradle.properties` equal to the `fabric-loom-remap` version in `stonecutter.gradle.kts`. Before bumping any of them, check that Stonecutter, Loom Back Compat, Fabric Loom, and NeoForge ModDev still work together.
 
 Metadata ranges:
 
 - Fabric: `minecraft` is an **exact** match of the target's Minecraft version, `java` is `>=` the target's Java version.
-- NeoForge: Minecraft `[X, X')` where `X'` is the target version with its last component incremented (`26.1.2` → `26.1.3`); NeoForge itself `[neoforge_version,)`.
+- NeoForge: Minecraft `[X, X')` where `X'` is the target version with its last component incremented (`26.1.2` → `26.1.3`; `1.21` counts as `1.21.0` → `1.21.1`, and `26.1` as `26.1.0` → `26.1.1`, because 26.1.1 and 26.1.2 have targets of their own); NeoForge itself `[neoforge_version,)`; `loaderVersion` (the `javafml` version) is `[4,)`, and `[3,)` for 1.20.6 (FancyModLoader 3).
 - Forge (1.20.1): Minecraft `[1.20.1,1.20.2)`, Forge `[47,)`.
 
 ## Baseline
 
-Conditions are written relative to the Minecraft version of the target (`>=1.21.4`, `<26`). The behavior of the oldest hook set is the **MC 1.21.1** column below; each later column lists only what changed.
+Conditions are written relative to the Minecraft version of the target (`>=1.21.4`, `<26`). The behavior of the oldest hook set is the **MC 1.21 / 1.21.1** column below; each later column lists only what changed.
 
-| Area | 1.20.1 | 1.21.1 (baseline) | 1.21.4 | 1.21.11 | 26.x |
+| Area | 1.20.1 – 1.20.6 | 1.21 / 1.21.1 (baseline) | 1.21.2 – 1.21.10 | 1.21.11 | 26.x |
 |---|---|---|---|---|---|
-| Frame hook | `GameRenderer.render(float partialTick, long nanoTime, boolean tick)` HEAD / RETURN (`GameRendererMixin`, `<1.21.1`) | `GameRenderer.render(DeltaTracker, boolean)`; partial tick from `deltaTracker.getGameTimeDeltaPartialTick(false)` (`>=1.21.1 <1.21.11`) | same | `SkyRenderer.extractRenderState(ClientLevel, float, Camera, SkyRenderState)` HEAD / RETURN (`SkyRendererMixin`) | same, with `SkyRenderState` in `net.minecraft.client.renderer.state.level` (`SkyRenderer26Mixin`) |
+| Frame hook | `GameRenderer.render(float partialTick, long nanoTime, boolean tick)` HEAD / RETURN (`GameRendererMixin`, `<1.21`) | `GameRenderer.render(DeltaTracker, boolean)`; partial tick from `deltaTracker.getGameTimeDeltaPartialTick(false)` (`>=1.21 <1.21.11`) | same | `SkyRenderer.extractRenderState(ClientLevel, float, Camera, SkyRenderState)` HEAD / RETURN (`SkyRendererMixin`) | same, with `SkyRenderState` in `net.minecraft.client.renderer.state.level` (`SkyRenderer26Mixin`) |
 | Sky angle | `DimensionType.timeOfDay(long)` overridden while rendering (`DimensionTypeMixin`, `<1.21.11`) | same | same | `renderState.sunAngle` / `starAngle` / `moonAngle` written at RETURN (angle × 2π; moon + π) | same |
 | Server time update | `ClientLevel.setDayTime(long)` HEAD, skipped while the client's own `tickTime()` runs; a negative day time means the day does not advance; game time is already set | same | `ClientLevel.setTimeFromServer(long gameTime, long dayTime, boolean tickDayTime)` HEAD; `dayTimeRate` = 1 or 0 from `tickDayTime` | same | `ClientClockManager.handleUpdates(long, Map<Holder<WorldClock>, ClockNetworkState>)` HEAD: the overworld clock state when present, otherwise a game-time-only sync (`ClientClockManagerMixin`) |
 | Current sky time | `level.getDayTime()` | same | same | same | `level.getOverworldClockTime()` |
-| Day time rate | `GameRules.RULE_DAYLIGHT` (`<1.21.4`), read every frame | same | `dayTimeRate` (`>=1.21.4`) | same | clock `rate` of the last overworld clock update |
+| Day time rate | `GameRules.RULE_DAYLIGHT` (`<1.21.2`), read every frame | same | `dayTimeRate` (`>=1.21.2`) | same | clock `rate` of the last overworld clock update |
 | Target time per frame | `ServerTimeEstimator.estimate`; before the first packet of a level `getDayTime()` + partial tick if the daylight rule is on | same | same, with `partialTick * dayTimeRate` before the first packet | same | `ServerTimeEstimator.estimate`; before the first packet `getOverworldClockTime()` |
 | Mixin config template | `ticks.forge.mixins.json` (Forge) / `ticks.mixins.json` | `ticks.mixins.json` | same | adds `SkyRendererMixin` | adds `SkyRenderer26Mixin` and `ClientClockManagerMixin` |
 
@@ -106,7 +117,7 @@ For each new version, after adding the targets:
 - Time advancement: daylight rule, `tickDayTime`, tick rate / freeze handling.
 - Express differences with narrow conditions in the shared tree, not copied files; update `ticks.mixins.json` placeholders if a mixin class is added.
 - Mixin config is registered in each packaged JAR; Forge refmap present.
-- Run `:<target>:test` and the packaged-JAR validation in [WORKFLOW.md](WORKFLOW.md) for each loader.
+- Run `:<target>:test`, the [scripted time-jump test](WORKFLOW.md#scripted-time-jump-test) on the dev client of each loader, and the packaged-JAR validation in [WORKFLOW.md](WORKFLOW.md) for each loader.
 - Fill this file's entry for the version; add a `CHANGELOG.md` line under `Compatibility`.
 
 Likely trouble spots, in order: the frame/sky hook, the time-update hook, then metadata and dependency version ranges.
@@ -115,15 +126,17 @@ Likely trouble spots, in order: the frame/sky hook, the time-update hook, then m
 
 ### MC 26.x — Fabric / NeoForge
 
-Targets: `26.1`, `26.1.2`, `26.2`, `26.3` (each `-fabric` and `-neoforge`) · first mod version: 1.0.0-beta (`26.3`: 1.0.1) · date: 2026-07-29 (`26.3`: 2026-10-12) · **default target (`vcsVersion`): `26.3-fabric`**
+Targets: `26.1`, `26.1.1`, `26.1.2`, `26.2`, `26.3` (each `-fabric` and `-neoforge`) · first mod version: 1.0.0-beta (`26.3`: 1.0.1, `26.1.1`: 1.1.0) · date: 2026-07-29 (`26.3`: 2026-10-12, `26.1.1`: 2026-10-18) · **default target (`vcsVersion`): `26.3-fabric`**
 
 #### Dependencies
 - Java 25; unobfuscated Minecraft (no remapping, `isUnobfuscated` in `build.fabric.gradle.kts`).
 - 26.2 and 26.3 need Fabric Loader `>=0.19.0` (`fabric_loader_26_2_min_version`, shared by both in `build.fabric.gradle.kts`).
 - `26.1` uses a NeoForge beta (`26.1.0.19-beta`); revisit when a stable build appears. NeoForge `26.3.0.76` is a stable build.
+- `26.1.1` has only NeoForge betas (`26.1.1.15-beta`, the last one); Fabric API `0.145.4+26.1.1`, Mod Menu `18.0.2`.
 
 #### API differences (vs. 1.21.11)
 - World time comes from the overworld clock, not `getDayTime()`. The server sends the clock state only when it changes (`/time set`, rate, pause, join); the periodic sync every 20 ticks has an empty clock map and carries the game time only, so the day time between clock updates is `clock time + (gameTime - clock gameTime) * rate`. `ServerTimeEstimator` derives it that way and measures the real tick rate from those periodic game times.
+- 26.1.1 needed no source changes either: `SkyRenderer.extractRenderState(ClientLevel, float, Camera, SkyRenderState)`, `ClientClockManager.handleUpdates(long, Map)`, and the `SkyRenderState` angles are as on 26.1.2 (checked with `javap`), and the dev clients apply all five mixins.
 - 26.3 needed no source changes: the 26.2 hooks (`SkyRenderer.extractRenderState`, `ClientClockManager.handleUpdates`, `SkyRenderState` angles) have identical signatures, and the Fabric dev client runs with all five mixins applied.
 - NeoForge 26.2.0.90 and newer read `iconFile` / `iconBlur` (square icons) and `bannerFile` in `neoforge.mods.toml`. Older NeoForge (21.x, 26.1.x, 26.2 betas) knows only `logoFile`, so `build.neoforge.gradle.kts` fills `${mod_icon}` per target.
 
@@ -131,7 +144,8 @@ Targets: `26.1`, `26.1.2`, `26.2`, `26.3` (each `-fabric` and `-neoforge`) · fi
 - NeoForge 26.2.0.90 and newer deprecate `logoFile` / `logoBlur` and show a warning screen at launch when they are used.
 
 #### Verified
-- In-game validation not recorded (see WORKFLOW.md → Packaged-JAR validation).
+- 26.1.1, 2026-10-18, mod 1.1.0: scripted time-jump test ([WORKFLOW.md](WORKFLOW.md#scripted-time-jump-test)) passed on the Fabric and NeoForge dev clients (every check, no error in the log). One NeoForge run hung after the world opened and ran into the 8-minute limit without a cause being found; the rerun passed. Packaged JAR not launched.
+- Other 26.x targets: in-game validation not recorded (see WORKFLOW.md → Packaged-JAR validation).
 
 ### MC 1.21.11 — Fabric / NeoForge
 
@@ -144,12 +158,119 @@ Targets: `1.21.11-fabric`, `1.21.11-neoforge` · first mod version: 1.0.0-beta �
 #### Verified
 - In-game validation not recorded.
 
+### MC 1.21.10 — Fabric / NeoForge
+
+Targets: `1.21.10-fabric`, `1.21.10-neoforge` · first mod version: 1.1.0 · date: 2026-10-18
+
+#### Dependencies
+- NeoForge `21.10.64`; Fabric API `0.138.4+1.21.10` and Mod Menu `16.0.0` (declares `minecraft >=1.21.9- <1.21.11`) for the dev client.
+
+#### API differences (vs. 1.21.8)
+- None for the hooks. `SkyRenderer.extractRenderState(ClientLevel, float, Vec3, SkyRenderState)` and `SkyRenderState` already exist (the render state arrives with 1.21.9), but `DimensionType.timeOfDay` is still the sky-angle source: `SkyRenderer.extractRenderState` reads it through `ClientLevel.getSunAngle` / `getTimeOfDay`, and the whole chain runs inside `GameRenderer.render` (`render` → `renderLevel` → `LevelRenderer.renderLevel` → `SkyRenderer.extractRenderState`), so `GameRendererMixin` + `DimensionTypeMixin` keep working. The 1.21.11 signature (`Camera` instead of `Vec3`) is what `SkyRendererMixin` targets, so it must not be enabled below 1.21.11 (checked with `javap`).
+- NeoForge `21.9` (1.21.9) exists only as a beta, so 1.21.9 is not ported.
+
+#### Verified
+- In-game validation not recorded.
+
+### MC 1.21.9 — Fabric / NeoForge
+
+Targets: `1.21.9-fabric`, `1.21.9-neoforge` · first mod version: 1.1.0 · date: 2026-10-18
+
+#### Dependencies
+- NeoForge `21.9.16-beta` (beta only, see the 1.21.6 entry); Fabric API `0.134.1+1.21.9` and Mod Menu `16.0.0` (declares `minecraft >=1.21.9- <1.21.11`) for the dev client.
+
+#### API differences (vs. 1.21.8)
+- None for the hooks; `SkyRenderer.extractRenderState` and `SkyRenderState` already exist as on 1.21.10 (see that entry).
+
+#### Verified
+- 2026-10-18, mod 1.1.0: scripted time-jump test ([WORKFLOW.md](WORKFLOW.md#scripted-time-jump-test)) passed on the Fabric and NeoForge dev clients (every check, no error in the log). Packaged JAR not launched.
+
+### MC 1.21.8 — Fabric / NeoForge
+
+Targets: `1.21.8-fabric`, `1.21.8-neoforge` · first mod version: 1.1.0 · date: 2026-10-18
+
+#### Dependencies
+- NeoForge `21.8.57`; Fabric API `0.136.1+1.21.8` and Mod Menu `15.0.0` (declares `minecraft ~1.21.6`) for the dev client.
+
+#### API differences (vs. 1.21.5)
+- None. The 1.21.6 rendering rework (`SkyRenderer` split out of `LevelRenderer`, GPU buffers) did not touch the hooks: `GameRenderer.render(DeltaTracker, boolean)`, `ClientLevel.setTimeFromServer(long, long, boolean)`, `DimensionType.timeOfDay(long)` (still reached through `LevelTimeAccess.getTimeOfDay`, which `LevelRenderer` calls for the sun angle), `TickRateManager`, and `Minecraft.isPaused()` are as on 1.21.5 (checked with `javap`).
+- NeoForge `21.6` and `21.7` (1.21.6, 1.21.7) exist only as betas; see the 1.21.6 entry.
+
+#### Verified
+- In-game validation not recorded.
+
+### MC 1.21.7 — Fabric / NeoForge
+
+Targets: `1.21.7-fabric`, `1.21.7-neoforge` · first mod version: 1.1.0 · date: 2026-10-18
+
+#### Dependencies
+- NeoForge `21.7.25-beta` (beta only, see the 1.21.6 entry); Fabric API `0.129.0+1.21.7` and Mod Menu `15.0.0` (declares `minecraft ~1.21.6`) for the dev client.
+
+#### API differences (vs. 1.21.6)
+- None. All hooks are as on 1.21.6 (checked with `javap`).
+
+#### Verified
+- 2026-10-18, mod 1.1.0: an earlier form of the time-jump test (same jumps and checks, the recording read by a script) ran on the Fabric and NeoForge dev clients: every jump blended along the shortest route, no error in the log. Packaged JAR not launched.
+
+### MC 1.21.6 — Fabric / NeoForge
+
+Targets: `1.21.6-fabric`, `1.21.6-neoforge` · first mod version: 1.1.0 · date: 2026-10-18
+
+#### Dependencies
+- NeoForge `21.6.20-beta`: no stable NeoForge build exists for 1.21.6 (the same holds for 1.21.7, 1.21.9, and 1.21.2), so the target uses the last beta, as 26.1 does. Fabric API `0.128.2+1.21.6` and Mod Menu `15.0.0` (declares `minecraft ~1.21.6`) for the dev client.
+
+#### API differences (vs. 1.21.5)
+- None for the hooks. The 1.21.6 rendering rework (`SkyRenderer` split out of `LevelRenderer`, GPU buffers) left `GameRenderer.render(DeltaTracker, boolean)`, `ClientLevel.setTimeFromServer(long, long, boolean)`, `DimensionType.timeOfDay(long)` (reached through `LevelTimeAccess.getTimeOfDay`, which `LevelRenderer` calls for the sun angle), `TickRateManager`, and `Minecraft.isPaused()` unchanged (checked with `javap`).
+
+#### Verified
+- In-game validation not recorded.
+
+### MC 1.21.5 — Fabric / NeoForge
+
+Targets: `1.21.5-fabric`, `1.21.5-neoforge` · first mod version: 1.1.0 · date: 2026-10-18
+
+#### Dependencies
+- NeoForge `21.5.101`; Fabric API `0.128.2+1.21.5` and Mod Menu `14.0.0` (declares `minecraft >=1.21.5 <1.21.6`) for the dev client.
+
+#### API differences (vs. 1.21.4)
+- None. Checked with `javap` on the Mojang-mapped 1.21.5 jar: `GameRenderer.render(DeltaTracker, boolean)`, `ClientLevel.setTimeFromServer(long, long, boolean)`, `DimensionType.timeOfDay(long)` (still called through `LevelTimeAccess.getTimeOfDay`, which `Level.getSunAngle` and the sky renderer use), `TickRateManager`, `Minecraft.isPaused()`.
+
+#### Verified
+- In-game validation not recorded.
+
 ### MC 1.21.4 — Fabric / NeoForge
 
 Targets: `1.21.4-fabric`, `1.21.4-neoforge` · first mod version: 0.1.2-alpha · date: 2026-07-27
 
+#### API differences (vs. 1.21.3)
+- None.
+
+#### Verified
+- In-game validation not recorded.
+
+### MC 1.21.2 — Fabric / NeoForge
+
+Targets: `1.21.2-fabric`, `1.21.2-neoforge` · first mod version: 1.1.0 · date: 2026-10-18
+
+#### Dependencies
+- NeoForge `21.2.1-beta` (beta only, see the 1.21.6 entry); Fabric API `0.106.1+1.21.2` and Mod Menu `12.0.1` (declares `minecraft >=1.21.2-`) for the dev client.
+
 #### API differences (vs. 1.21.1)
-- `ClientLevel.setDayTime` is replaced by `setTimeFromServer(gameTime, dayTime, tickDayTime)`; the daylight gamerule no longer drives the time, `tickDayTime` does (`dayTimeRate`).
+- `ClientLevel.setDayTime` is replaced by `setTimeFromServer(gameTime, dayTime, tickDayTime)`; the daylight gamerule no longer drives the time, `tickDayTime` does (`dayTimeRate`). This arrives with 1.21.2, not 1.21.4: `ClientLevel.getGameRules()` is gone (the first 1.21.3 build failed on it), so the conditions say `>=1.21.2` / `<1.21.2` (`TicksController`, `ClientLevelMixin`).
+- The frame hook, `DimensionType.timeOfDay`, and `TickRateManager` are unchanged (checked with `javap`).
+
+#### Verified
+- 2026-10-18, mod 1.1.0: scripted time-jump test ([WORKFLOW.md](WORKFLOW.md#scripted-time-jump-test)) passed on the Fabric and NeoForge dev clients (every check, no error in the log). Packaged JAR not launched.
+
+### MC 1.21.3 — Fabric / NeoForge
+
+Targets: `1.21.3-fabric`, `1.21.3-neoforge` · first mod version: 1.1.0 · date: 2026-10-18
+
+#### Dependencies
+- NeoForge `21.3.100`; Fabric API `0.114.1+1.21.3` and Mod Menu `12.0.1` for the dev client (Mod Menu 12.x declares `minecraft >=1.21.2-`).
+
+#### API differences (vs. 1.21.2)
+- None (checked with `javap` on the Mojang-mapped 1.21.3 jar). The change from `setDayTime` to `setTimeFromServer` that the conditions are written for is described in the 1.21.2 entry.
 
 #### Verified
 - In-game validation not recorded.
@@ -168,6 +289,38 @@ Targets: `1.21.1-fabric`, `1.21.1-neoforge` · first mod version: 0.1.2-alpha ·
 #### Verified
 - In-game validation not recorded.
 
+### MC 1.21 — Fabric / NeoForge
+
+Targets: `1.21-fabric`, `1.21-neoforge` · first mod version: 1.1.0 · date: 2026-10-18
+
+#### Dependencies
+- NeoForge `21.0.167` (the last 21.0 build); Fabric API `0.102.0+1.21` and Mod Menu `11.0.3` for the dev client.
+
+#### API differences (vs. 1.21.1)
+- None. Every hook has the same signature as on 1.21.1; the version conditions that said `1.21.1` (`DeltaTracker` frame hook, `tickRateManager()`) now say `1.21`. Checked with `javap` on the Mojang-mapped 1.21 jar: `GameRenderer.render(DeltaTracker, boolean)`, `ClientLevel.setDayTime(long)` / `tickTime()`, `DimensionType.timeOfDay(long)`, and `TickRateManager.runsNormally()` / `tickrate()`.
+
+#### Quirks
+- `build.neoforge.gradle.kts` treats `1.21` as `1.21.0` for the Minecraft upper bound (`[1.21,1.21.1)`); incrementing the last component of `1.21` literally would give `1.22`.
+
+#### Verified
+- In-game validation not recorded.
+
+### MC 1.20.6 — Fabric / NeoForge
+
+Targets: `1.20.6-fabric`, `1.20.6-neoforge` · first mod version: 1.1.0 · date: 2026-10-18
+
+#### Dependencies
+- Java 21 (1.20.5 and newer; 1.20.1–1.20.4 use 17); the Fabric build treats only 1.20.1 as legacy (Fabric Loader `0.15.11`), so 1.20.6 takes the current Loader.
+- NeoForge `20.6.144`, on FancyModLoader 3: `neoforge.mods.toml` needs `loaderVersion="[3,)"` (`neoforge_1_20_6_loader_version_range`), the global `[4,)` would reject the mod. Fabric API `0.100.8+1.20.6` and Mod Menu `10.0.0` (declares `minecraft >=1.20.5-`) for the dev client.
+
+#### API differences (vs. 1.21)
+- Frame hook: `GameRenderer.render(float, long, boolean)` as on 1.20.1 (the `DeltaTracker` signature starts with 1.21; conditions `<1.21` / `>=1.21`).
+- `TickRateManager` and `ClientLevel.tickRateManager()` exist (`/tick` arrived with 1.20.3), so the tick rate and freeze handling in `TicksController` uses `>=1.20.3`, not `>=1.21`.
+- Time packets as on 1.21.1: `ClientLevel.setDayTime(long)` skipped while the client's own `tickTime()` runs. Checked with `javap` on the Mojang-mapped 1.20.6 jar: `render(float, long, boolean)`, `setDayTime`, `tickTime`, `tickRateManager()`, `DimensionType.timeOfDay`, `TickRateManager.runsNormally()` / `tickrate()`, `Minecraft.isPaused()`.
+
+#### Verified
+- 2026-10-18, mod 1.1.0: scripted time-jump test ([WORKFLOW.md](WORKFLOW.md#scripted-time-jump-test)) passed on the Fabric and NeoForge dev clients (every check, no error in the log). Packaged JAR not launched.
+
 ### MC 1.20.1 — Fabric / Forge
 
 Targets: `1.20.1-fabric`, `1.20.1-forge` · first mod version: 0.1.2-alpha · date: 2026-07-27
@@ -177,7 +330,7 @@ Targets: `1.20.1-fabric`, `1.20.1-forge` · first mod version: 0.1.2-alpha · da
 - Forge uses ModDevGradle legacy (`net.neoforged.moddev.legacyforge`) with Mixin 0.8.5.
 
 #### API differences (vs. 1.21.1)
-- `GameRenderer.render(float, long, boolean)` is the frame hook (`GameRendererMixin`, `<1.21.1`).
+- `GameRenderer.render(float, long, boolean)` is the frame hook (`GameRendererMixin`, `<1.21`).
 - There is no tick rate manager (`/tick` arrived with 1.20.3): the nominal rate is 20 and time always runs normally. Time packets are handled as on 1.21.1.
 
 #### Quirks
@@ -185,6 +338,11 @@ Targets: `1.20.1-fabric`, `1.20.1-forge` · first mod version: 0.1.2-alpha · da
 
 #### Verified
 - In-game validation not recorded.
+## Versions that cannot be ported
+
+- **1.20.5:** the NeoForge 20.5 betas (`20.5.0-beta` … `20.5.21-beta`) publish no Gradle module metadata (`neoforge-<version>.module` is a 404, it exists for `20.4.253` and `20.6.144`), so ModDevGradle 2.0.148 fails in `createMinecraftArtifacts` with "Unable to find a variant of 'net.neoforged:neoforge:20.5.21-beta' with the requested capability 'net.neoforged:neoforge-moddev-bundle'". The Fabric target built and its hooks are those of 1.20.6, but there is no NeoForge dev client to test the second loader, and a 1.20.6 JAR with a widened range would be untested. Revisit if a toolchain that resolves these betas appears. Mojang replaced 1.20.5 within a week with 1.20.6.
+- **1.20.3:** neither NeoForge nor Forge has a 1.20.3 release (NeoForge goes from 20.2 to 20.4).
+
 ## Archived ports
 
 None yet. When a target is dropped, move its entry here unchanged and note the last mod version that shipped it.

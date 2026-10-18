@@ -10,10 +10,10 @@ Ticks uses one [Stonecutter](https://stonecutter.kikugie.dev/) repository: a sin
 |---|---|---:|
 | `1.20.1-fabric` | Fabric | 17 |
 | `1.20.1-forge` | Forge | 17 |
-| `1.21.1-fabric`, `1.21.4-fabric`, `1.21.11-fabric` | Fabric | 21 |
-| `1.21.1-neoforge`, `1.21.4-neoforge`, `1.21.11-neoforge` | NeoForge | 21 |
-| `26.1-fabric`, `26.1.2-fabric`, `26.2-fabric`, `26.3-fabric` | Fabric | 25 |
-| `26.1-neoforge`, `26.1.2-neoforge`, `26.2-neoforge`, `26.3-neoforge` | NeoForge | 25 |
+| `1.20.6-fabric`, `1.21-fabric`, `1.21.1-fabric`, `1.21.2-fabric`, `1.21.3-fabric`, `1.21.4-fabric`, `1.21.5-fabric`, `1.21.6-fabric`, `1.21.7-fabric`, `1.21.8-fabric`, `1.21.9-fabric`, `1.21.10-fabric`, `1.21.11-fabric` | Fabric | 21 |
+| `1.20.6-neoforge`, `1.21-neoforge`, `1.21.1-neoforge`, `1.21.2-neoforge`, `1.21.3-neoforge`, `1.21.4-neoforge`, `1.21.5-neoforge`, `1.21.6-neoforge`, `1.21.7-neoforge`, `1.21.8-neoforge`, `1.21.9-neoforge`, `1.21.10-neoforge`, `1.21.11-neoforge` | NeoForge | 21 |
+| `26.1-fabric`, `26.1.1-fabric`, `26.1.2-fabric`, `26.2-fabric`, `26.3-fabric` | Fabric | 25 |
+| `26.1-neoforge`, `26.1.1-neoforge`, `26.1.2-neoforge`, `26.2-neoforge`, `26.3-neoforge` | NeoForge | 25 |
 
 The matrix is declared once in [`settings.gradle.kts`](../settings.gradle.kts); the Java version of each target is chosen in its loader build script. The active target for the convenience tasks is stored in `.sc_active_version`. Dependency versions per target: [VERSION_NOTES.md](VERSION_NOTES.md).
 
@@ -197,13 +197,48 @@ A change is ready to merge when:
 IDE runs are not enough for loader or Mixin changes. Before releasing (and after any change to mixins, metadata, or the build scripts):
 
 - inspect each JAR you ship: the mixin config is present and registered (`ticks.mixins.json` in `fabric.mod.json` / `neoforge.mods.toml`; `ticks.forge.mixins.json`, `ticks.forge.refmap.json`, and the `MixinConfigs` manifest entry on Forge), and no class from another loader's package is inside;
-- launch at least one JAR per loader and per Minecraft *generation* (`1.20.1`, `1.21.1`/`1.21.4`, `1.21.11`, `26.x`) in a clean client profile, since the hooks differ per generation;
+- launch at least one JAR per loader and per Minecraft *generation* (`1.20.1`, `1.20.6`, `1.21`/`1.21.1`, `1.21.2`/`1.21.3`/`1.21.4`/`1.21.5`/`1.21.6`/`1.21.7`/`1.21.8`/`1.21.9`/`1.21.10`, `1.21.11`, `26.x`) in a clean client profile, since the hooks differ per generation;
 - verify `config/ticks.json` is created with `transitionTimeMillis` and that changing it takes effect after a restart;
 - watch the sun/moon at high FPS: motion must be smooth between ticks, `/time set` and `/time add` must blend instead of snapping or spinning the wrong way, and the sky must not drift while the game is paused;
-- on every version with `/tick` (1.21.1 and newer) test `/tick freeze` and `/tick rate`: the sky must stop on freeze, speed up within a second at `/tick rate 100`, and at a rate the machine cannot sustain (for example `/tick rate 10000`) keep pace with the daytime the world really reaches (compare with `/time query daytime`) instead of racing ahead; a lagging server must not make the sky run ahead and jump back;
+- on every version with `/tick` (1.20.3 and newer) test `/tick freeze` and `/tick rate`: the sky must stop on freeze, speed up within a second at `/tick rate 100`, and at a rate the machine cannot sustain (for example `/tick rate 10000`) keep pace with the daytime the world really reaches (compare with `/time query daytime`) instead of racing ahead; a lagging server must not make the sky run ahead and jump back;
 - confirm nothing changes in the Nether and the End (fixed-time dimensions) and that world time and server behavior are unaffected.
 
 Use a clean client profile each time, and record the outcome in the target's `Verified` line in [VERSION_NOTES.md](VERSION_NOTES.md). Shaders are not supported.
+
+## Scripted time-jump test
+
+Mixins and rendering cannot be unit-tested, and a build or a `javap` check does not show that the sky really moves. `tools/selftest/` holds a harness that starts the real dev client, joins a test world, sets the time with server commands (`/time set 0`, `12000`, `/time add 6000`, `23000`, then `1000` to cross midnight, `6000`, `18000`), records the visual sky time of every frame and judges it. It is not part of the mod: `run-selftest.ps1` copies it into `src/` for a run and removes it again, so it never reaches a JAR.
+
+What it checks:
+
+- the sky moves in (nearly) every frame, not once per tick, and never steps back by more than a few ticks;
+- before 1.21.11 `DimensionType.timeOfDay` returns the visual time (the hook is applied);
+- every jump is blended along the shortest route (`1000` after `23000` runs forward through midnight), no single frame takes more than 35 % of it, about half is left after 100 ms, and the sky is within 10 ticks of the real time after 2.5 s;
+- `latest.log` has no mixin or other error lines.
+
+Windows PowerShell only. Close every running dev client and Gradle run first (a running one holds the Gradle lock), and do not click into the game window that opens for about a minute per target.
+
+Every target in `versions/`, one after the other (about two minutes each):
+
+```powershell
+.\tools\selftest\run-selftest.ps1
+```
+
+Chosen targets only (comma-separated: a space makes PowerShell bind the second name to another parameter):
+
+```powershell
+.\tools\selftest\run-selftest.ps1 -Targets 1.21.9-fabric,1.21.9-neoforge
+```
+
+The script needs a creative world with cheats to copy; without `-World <folder>` it takes the first one it finds in `versions/*/run/saves` (the oldest target's, because an older game cannot open a newer world). It switches the profile's `options.txt` for the run (`onboardAccessibility:false`: a fresh profile opens the accessibility onboarding screen instead of the quick-play world and the run hangs there; `pauseOnLostFocus:false`) and restores it afterwards. `-KeepFiles` leaves `ticks-selftest.csv` (one row per frame) and the world copy in the profile.
+
+Clean up after a run that was killed:
+
+```powershell
+.\tools\selftest\run-selftest.ps1 -Uninstall
+```
+
+Record each run in the target's `Verified` line in [VERSION_NOTES.md](VERSION_NOTES.md). The test does not replace the packaged-JAR validation above (loader metadata, the real mod list, `/tick`, the Nether and the End).
 
 ## Changelog
 
@@ -221,7 +256,7 @@ Use a clean client profile each time, and record the outcome in the target's `Ve
    - stable: `1.2.3`
    - beta: `1.2.3-beta` (or `1.2.3-beta.1`)
    - alpha: `1.2.3-alpha` (or `1.2.3-alpha.1`)
-2. Run a fresh full build; the sixteen JARs are collected in `build/libs/<mod_version>/`. Windows:
+2. Run a fresh full build; one JAR per target is collected in `build/libs/<mod_version>/`. Windows:
 
    ```powershell
    .\gradlew.bat clean buildAndCollect
