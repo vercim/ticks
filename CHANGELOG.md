@@ -1,5 +1,8 @@
 ## [Unreleased]
 
+### Overall
+- New mod icon.
+
 ### Compatibility
 - Added Minecraft 1.21 support for Fabric and NeoForge.
 
