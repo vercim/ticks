@@ -134,7 +134,7 @@ try {
             $null = $process.Handle   # without it ExitCode stays empty after a timed wait
             if (-not $process.WaitForExit($TimeoutMinutes * 60 * 1000)) {
                 Stop-Game $target
-                & taskkill /PID $process.Id /T /F | Out-Null
+                cmd /c "taskkill /PID $($process.Id) /T /F >nul 2>&1"
                 $reasons += "TIMEOUT after $TimeoutMinutes min (is the game stuck on a screen? last log line: $((Get-Content (Join-Path $run 'logs\latest.log') -Tail 1 -ErrorAction SilentlyContinue)))"
             } else {
                 $process.WaitForExit()
