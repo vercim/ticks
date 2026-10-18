@@ -338,6 +338,11 @@ Targets: `1.20.1-fabric`, `1.20.1-forge` · first mod version: 0.1.2-alpha · da
 
 #### Verified
 - In-game validation not recorded.
+## Versions that cannot be ported
+
+- **1.20.5:** the NeoForge 20.5 betas (`20.5.0-beta` … `20.5.21-beta`) publish no Gradle module metadata (`neoforge-<version>.module` is a 404, it exists for `20.4.253` and `20.6.144`), so ModDevGradle 2.0.148 fails in `createMinecraftArtifacts` with "Unable to find a variant of 'net.neoforged:neoforge:20.5.21-beta' with the requested capability 'net.neoforged:neoforge-moddev-bundle'". The Fabric target built and its hooks are those of 1.20.6, but there is no NeoForge dev client to test the second loader, and a 1.20.6 JAR with a widened range would be untested. Revisit if a toolchain that resolves these betas appears. Mojang replaced 1.20.5 within a week with 1.20.6.
+- **1.20.3:** neither NeoForge nor Forge has a 1.20.3 release (NeoForge goes from 20.2 to 20.4).
+
 ## Archived ports
 
 None yet. When a target is dropped, move its entry here unchanged and note the last mod version that shipped it.
