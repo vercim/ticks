@@ -61,6 +61,7 @@ Values come from `gradle.properties` and the loader build scripts; copy, do not 
 | 1.21.4 | 21 | same | `neoforge_1_21_4_version=21.4.158` |
 | 1.21.5 | 21 | same | `neoforge_1_21_5_version=21.5.101` |
 | 1.21.6 | 21 | same | `neoforge_1_21_6_version=21.6.20-beta` |
+| 1.21.7 | 21 | same | `neoforge_1_21_7_version=21.7.25-beta` |
 | 1.21.8 | 21 | same | `neoforge_1_21_8_version=21.8.57` |
 | 1.21.10 | 21 | same | `neoforge_1_21_10_version=21.10.64` |
 | 1.21.11 | 21 | same | `neoforge_1_21_11_version=21.11.45` |
@@ -71,7 +72,7 @@ Values come from `gradle.properties` and the loader build scripts; copy, do not 
 
 Current common values: `fabric_loader_version=0.19.5`, `fabric_loader_min_version=0.16.10`, `neoforge_loader_version_range=[4,)`. Ticks has no mod dependencies beyond the loader.
 
-Fabric dev clients additionally load Fabric API and Mod Menu through `modLocalRuntime` (`build.fabric.gradle.kts`), so the mod list can be checked without installing anything; neither is on the compile classpath or in the JAR. Versions are in `gradle.properties` as `modmenu_version_<minecraft version with _>` and `fabric_api_version_<minecraft version with _>`; a new Minecraft version needs both entries, or the Fabric build fails with a missing property. Mod Menu versions: `7.2.2` (1.20.1), `11.0.3` (1.21), `11.0.5` (1.21.1), `12.0.1` (1.21.3), `13.0.4` (1.21.4), `14.0.0` (1.21.5), `15.0.0` (1.21.6, 1.21.8), `16.0.0` (1.21.10), `17.0.1` (1.21.11), `18.0.2` (26.1, 26.1.2), `20.0.3` (26.2), `21.0.0` (26.3).
+Fabric dev clients additionally load Fabric API and Mod Menu through `modLocalRuntime` (`build.fabric.gradle.kts`), so the mod list can be checked without installing anything; neither is on the compile classpath or in the JAR. Versions are in `gradle.properties` as `modmenu_version_<minecraft version with _>` and `fabric_api_version_<minecraft version with _>`; a new Minecraft version needs both entries, or the Fabric build fails with a missing property. Mod Menu versions: `7.2.2` (1.20.1), `11.0.3` (1.21), `11.0.5` (1.21.1), `12.0.1` (1.21.3), `13.0.4` (1.21.4), `14.0.0` (1.21.5), `15.0.0` (1.21.6, 1.21.7, 1.21.8), `16.0.0` (1.21.10), `17.0.1` (1.21.11), `18.0.2` (26.1, 26.1.2), `20.0.3` (26.2), `21.0.0` (26.3).
 
 Fabric API is needed because Mod Menu requires some of its modules and Loom removes the ones nested in the Mod Menu JAR; the POMs of Mod Menu 11.0.3, 11.0.5, 13.0.4, and 17.0.1 do not declare them either, so Gradle would not pull them in (the client then stops with "Incompatible mods found"). NeoForge and Forge have a built-in mod list and need nothing.
 
@@ -174,6 +175,19 @@ Targets: `1.21.8-fabric`, `1.21.8-neoforge` · first mod version: 1.1.0 · date:
 #### API differences (vs. 1.21.5)
 - None. The 1.21.6 rendering rework (`SkyRenderer` split out of `LevelRenderer`, GPU buffers) did not touch the hooks: `GameRenderer.render(DeltaTracker, boolean)`, `ClientLevel.setTimeFromServer(long, long, boolean)`, `DimensionType.timeOfDay(long)` (still reached through `LevelTimeAccess.getTimeOfDay`, which `LevelRenderer` calls for the sun angle), `TickRateManager`, and `Minecraft.isPaused()` are as on 1.21.5 (checked with `javap`).
 - NeoForge `21.6` and `21.7` (1.21.6, 1.21.7) exist only as betas; see the 1.21.6 entry.
+
+#### Verified
+- In-game validation not recorded.
+
+### MC 1.21.7 — Fabric / NeoForge
+
+Targets: `1.21.7-fabric`, `1.21.7-neoforge` · first mod version: 1.1.0 · date: 2026-10-18
+
+#### Dependencies
+- NeoForge `21.7.25-beta` (beta only, see the 1.21.6 entry); Fabric API `0.129.0+1.21.7` and Mod Menu `15.0.0` (declares `minecraft ~1.21.6`) for the dev client.
+
+#### API differences (vs. 1.21.6)
+- None. All hooks are as on 1.21.6 (checked with `javap`).
 
 #### Verified
 - In-game validation not recorded.

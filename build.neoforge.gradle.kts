@@ -13,6 +13,7 @@ val neoForgeVersion = when (minecraftVersion) {
 	"1.21.4" -> project.property("neoforge_1_21_4_version") as String
 	"1.21.5" -> project.property("neoforge_1_21_5_version") as String
 	"1.21.6" -> project.property("neoforge_1_21_6_version") as String
+	"1.21.7" -> project.property("neoforge_1_21_7_version") as String
 	"1.21.8" -> project.property("neoforge_1_21_8_version") as String
 	"1.21.10" -> project.property("neoforge_1_21_10_version") as String
 	"1.21.11" -> project.property("neoforge_1_21_11_version") as String
